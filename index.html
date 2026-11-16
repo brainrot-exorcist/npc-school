@@ -3,442 +3,145 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Таблицы Шульте</title>
+<title>Упражнения</title>
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+  * { box-sizing: border-box; }
   body {
-    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-    background: #1a1a2e; color: #eee;
-    display: flex; flex-direction: column; align-items: center;
-    min-height: 100vh; padding: 20px; gap: 16px;
+    font-family: 'Comic Sans MS', Arial, sans-serif;
+    background: #f6f6f6;
+    display: flex; justify-content: center; align-items: center;
+    min-height: 100vh; margin: 0; padding: 15px; color: #141414;
   }
-  h1 { font-size: 1.4rem; font-weight: 600; color: #e94560; }
-  .pickers { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
-  .picker-group { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; align-items: center; }
-  .picker-label { color: #888; font-size: 0.85rem; margin-right: 4px; }
-  .size-btn, .mode-btn, .hard-btn {
-    font-family: inherit; font-size: 0.95rem; padding: 8px 18px;
-    border: 2px solid #0f3460; border-radius: 10px;
-    background: transparent; color: #ccc; font-weight: 600;
-    cursor: pointer; transition: all 0.2s;
+  .card {
+    background: #fff; border-radius: 12px; padding: 25px 30px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    border: 1px solid #e8e8e8; text-align: center;
+    max-width: 600px; width: 100%;
   }
-  .size-btn:hover, .mode-btn:hover, .hard-btn:hover { border-color: #1a4a7a; color: #fff; }
-  .size-btn.active { background: #e94560; border-color: #e94560; color: #fff; }
-  .mode-btn.active { background: #7b2cbf; border-color: #7b2cbf; color: #fff; }
-  .hard-btn.active { background: #c1121f; border-color: #c1121f; color: #fff; }
-  .stats {
-    display: flex; gap: 24px; font-size: 1.1rem;
-    background: #16213e; padding: 12px 28px; border-radius: 12px;
-    flex-wrap: wrap; justify-content: center;
-  }
-  .stats b { color: #4cc9f0; }
-  #board {
-    position: relative;
-    width: min(92vw, 480px);
-    aspect-ratio: 1;
-    background: #16213e;
-    border-radius: 16px;
-    overflow: hidden;
-  }
-  .cell {
-    position: absolute;
-    display: flex; align-items: center; justify-content: center;
-    font-weight: 600;
-    background: #0f3460;
-    border: 2px solid #16213e;
-    border-radius: 0;
-    color: #e0e0e0; cursor: pointer;
-    transition: background 0.18s, color 0.18s;
-    user-select: none; -webkit-tap-highlight-color: transparent;
-    overflow: hidden;
-  }
-  /* Найденные клетки в обычном режиме (не хардкор) */
-  .cell.done { background: #1b3a1b; color: #4caf50 !important; cursor: default; }
-  /* Неверный клик — короткая красная вспышка */
-  .cell.wrong { background: #5a1a1a; }
-  /* Верный клик в хардкоре — короткая зелёная вспышка, затем возврат */
-  .cell.flash-ok { background: #2d6a2d; color: #b6ffb6 !important; }
+  h1 { margin: 0 0 18px; font-size: 24px; font-weight: bold; }
 
-  button.action {
-    font-family: inherit; font-size: 1rem; padding: 12px 28px;
-    border: none; border-radius: 10px; background: #e94560; color: #fff;
-    font-weight: 600; cursor: pointer;
+  .list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+  .item {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px; padding: 14px 16px;
+    background: #f0f0f0; border-radius: 0;
+    text-decoration: none; color: #141414;
+    font-size: 15px; font-weight: bold;
+    transition: background 0.15s, transform 0.1s;
+    border: none; cursor: pointer; font-family: inherit;
+    text-align: left;
   }
-  .history {
-    width: min(92vw, 480px); background: #16213e;
-    border-radius: 12px; padding: 14px 18px;
+  .item:hover { background: #e6e6e6; }
+  .item:active { transform: translateY(1px); }
+  .item .arrow {
+    flex: 0 0 auto;
+    width: 22px; height: 22px; border-radius: 50%;
+    background: #FFD502; color: #141414;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 13px; box-shadow: 0 2px 0 #c9a800;
   }
-  .history h2 { font-size: 1rem; color: #4cc9f0; margin-bottom: 8px; }
-  .record {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 10px 4px; border-bottom: 1px solid #0f3460;
-    gap: 10px;
+
+  .status {
+    font-size: 14px; color: #757575;
+    display: flex; align-items: center; justify-content: center;
+    gap: 8px; min-height: 24px; margin-top: 8px;
   }
-  .record:last-child { border-bottom: none; }
-  .record .label { color: #aaa; font-size: 0.9rem; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-  .record .tag {
-    font-size: 0.7rem; padding: 2px 6px; border-radius: 6px;
-    background: #0f3460; color: #aaa;
+  .status .ico {
+    width: 18px; height: 18px; border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: bold; background: #4caf50; color: #fff;
   }
-  .record .tag.expert { background: #3a1a5a; color: #c49eff; }
-  .record .tag.hardcore { background: #5a1a1a; color: #ff9a9a; }
-  .record .time { color: #4cc9f0; font-weight: 800; font-size: 1.15rem; font-variant-numeric: tabular-nums; }
-  .empty { color: #666; font-style: italic; font-size: 0.9rem; }
-  #message { color: #4cc9f0; font-weight: 600; min-height: 1.4em; text-align: center; }
-  .hint { color: #666; font-size: 0.8rem; text-align: center; max-width: 92vw; }
+  .status .ico.error { background: #e07a7a; }
+
+  .empty {
+    padding: 20px; color: #757575; font-size: 14px;
+    background: #fbfbfb; border-radius: 8px;
+    border: 1px dashed #dcdcdc;
+  }
+
+  @media (max-width: 420px) {
+    h1 { font-size: 20px; }
+    .item { font-size: 14px; padding: 12px 14px; }
+  }
 </style>
 </head>
 <body>
-  <h1>Таблицы Шульте</h1>
-
-  <div class="pickers">
-    <div class="picker-group" id="sizePicker">
-      <span class="picker-label">Размер:</span>
-      <button class="size-btn" data-size="3">3×3</button>
-      <button class="size-btn" data-size="4">4×4</button>
-      <button class="size-btn active" data-size="5">5×5</button>
-      <button class="size-btn" data-size="6">6×6</button>
-    </div>
-    <div class="picker-group" id="modePicker">
-      <span class="picker-label">Режим:</span>
-      <button class="mode-btn active" data-mode="normal">Обычный</button>
-      <button class="mode-btn" data-mode="expert">Эксперт</button>
-    </div>
-    <div class="picker-group" id="hardPicker">
-      <span class="picker-label">Хардкор:</span>
-      <button class="hard-btn" data-hard="off">Выкл</button>
-      <button class="hard-btn" data-hard="on">Вкл</button>
-    </div>
-  </div>
-
-  <div class="stats">
-    <div>Размер: <b id="sizeLabel">5×5</b></div>
-    <div>Режим: <b id="modeLabel">Обычный</b></div>
-    <div>Хардкор: <b id="hardLabel">Выкл</b></div>
-    <div>Время: <b id="timer">00.00</b></div>
-    <div>Далее: <b id="next">1</b></div>
-  </div>
-
-  <div id="message"></div>
-  <div id="board"></div>
-  <button class="action" id="newBtn">Новая таблица</button>
-
-  <div class="history">
-    <h2>История результатов</h2>
-    <div id="historyList"><div class="empty">Пока нет результатов — пройдите таблицу.</div></div>
-  </div>
-
-  <p class="hint">
-    <b>Режим</b> задаёт вид таблицы: обычная ровная сетка или мозаика из прямоугольников.<br>
-    <b>Хардкор</b> — найденные клетки <b>не остаются закрашенными</b>, но при верном клике коротко вспыхивают зелёным, чтобы было видно, что нажатие засчиталось.
-  </p>
+<div class="card">
+  <h1>Упражнения</h1>
+  <div class="list" id="list"></div>
+  <div class="status" id="status"></div>
+</div>
 
 <script>
-var currentSize = 5;
-var currentMode = 'normal';
-var hardcore = false;
-var next = 1;
-var startTime = null;
-var timerId = null;
-var solved = false;
-var attempt = 0;
+  /* ============================================================
+     СПИСОК УПРАЖНЕНИЙ
+     ------------------------------------------------------------
+     Чтобы добавить упражнение, допишите строчку вида:
+         { file: "имя-файла.html" },
+     перед закрывающей скобкой ];
+     Название писать не нужно — оно берётся из <h1> упражнения.
+     ============================================================ */
+  const EXERCISES = [
+    { file: "умн деление его новый.html" },
+  ];
 
-var boardEl = document.getElementById('board');
-var timerEl = document.getElementById('timer');
-var nextEl = document.getElementById('next');
-var sizeLabelEl = document.getElementById('sizeLabel');
-var modeLabelEl = document.getElementById('modeLabel');
-var hardLabelEl = document.getElementById('hardLabel');
-var messageEl = document.getElementById('message');
-var historyListEl = document.getElementById('historyList');
-var sizePicker = document.getElementById('sizePicker');
-var modePicker = document.getElementById('modePicker');
-var hardPicker = document.getElementById('hardPicker');
-var newBtn = document.getElementById('newBtn');
+  (async function () {
+    'use strict';
 
-function modeName(m) {
-  return m === 'expert' ? 'Эксперт' : 'Обычный';
-}
+    var listEl = document.getElementById('list');
+    var statusEl = document.getElementById('status');
 
-function formatTime(ms) {
-  var s = (ms / 1000).toFixed(2);
-  while (s.length < 5) s = '0' + s;
-  return s;
-}
-
-function setupSizeButtons() {
-  var btns = sizePicker.getElementsByTagName('button');
-  for (var i = 0; i < btns.length; i++) {
-    var b = btns[i];
-    if (!b.getAttribute('data-size')) continue;
-    b.className = (parseInt(b.getAttribute('data-size'), 10) === currentSize) ? 'size-btn active' : 'size-btn';
-    b.onclick = function() {
-      currentSize = parseInt(this.getAttribute('data-size'), 10);
-      setupSizeButtons();
-      sizeLabelEl.textContent = currentSize + '×' + currentSize;
-      resetGame();
-    };
-  }
-}
-
-function setupModeButtons() {
-  var btns = modePicker.getElementsByTagName('button');
-  for (var i = 0; i < btns.length; i++) {
-    var b = btns[i];
-    var m = b.getAttribute('data-mode');
-    if (!m) continue;
-    b.className = (m === currentMode) ? 'mode-btn active' : 'mode-btn';
-    b.onclick = function() {
-      currentMode = this.getAttribute('data-mode');
-      setupModeButtons();
-      modeLabelEl.textContent = modeName(currentMode);
-      resetGame();
-    };
-  }
-}
-
-function setupHardButtons() {
-  var btns = hardPicker.getElementsByTagName('button');
-  for (var i = 0; i < btns.length; i++) {
-    var b = btns[i];
-    var v = b.getAttribute('data-hard');
-    if (!v) continue;
-    var isOn = (v === 'on');
-    b.className = (isOn === hardcore) ? 'hard-btn active' : 'hard-btn';
-    b.onclick = function() {
-      hardcore = (this.getAttribute('data-hard') === 'on');
-      setupHardButtons();
-      hardLabelEl.textContent = hardcore ? 'Вкл' : 'Выкл';
-      resetGame();
-    };
-  }
-}
-
-function shuffle(arr) {
-  for (var i = arr.length - 1; i > 0; i--) {
-    var j = Math.floor(Math.random() * (i + 1));
-    var t = arr[i]; arr[i] = arr[j]; arr[j] = t;
-  }
-  return arr;
-}
-
-function splitSquare(total) {
-  var rects = [{ x: 0, y: 0, w: 1, h: 1 }];
-  while (rects.length < total) {
-    var totalArea = 0;
-    for (var i = 0; i < rects.length; i++) totalArea += rects[i].w * rects[i].h;
-    var pick = Math.random() * totalArea;
-    var acc = 0;
-    var idx = 0;
-    for (var i = 0; i < rects.length; i++) {
-      acc += rects[i].w * rects[i].h;
-      if (pick <= acc) { idx = i; break; }
+    function setStatus(text, isError) {
+      statusEl.innerHTML = '';
+      var ico = document.createElement('span');
+      ico.className = 'ico' + (isError ? ' error' : '');
+      ico.textContent = isError ? '×' : '✓';
+      var span = document.createElement('span');
+      span.textContent = text;
+      statusEl.appendChild(ico);
+      statusEl.appendChild(span);
     }
-    var r = rects[idx];
-    var vertical;
-    if (r.w > r.h * 1.6) vertical = true;
-    else if (r.h > r.w * 1.6) vertical = false;
-    else vertical = Math.random() < 0.5;
-    var ratio = 0.3 + Math.random() * 0.4;
-    var a, b;
-    if (vertical) {
-      a = { x: r.x, y: r.y, w: r.w * ratio, h: r.h };
-      b = { x: r.x + r.w * ratio, y: r.y, w: r.w * (1 - ratio), h: r.h };
-    } else {
-      a = { x: r.x, y: r.y, w: r.w, h: r.h * ratio };
-      b = { x: r.x, y: r.y + r.h * ratio, w: r.w, h: r.h * (1 - ratio) };
+
+    async function getName(file) {
+      try {
+        var res = await fetch(encodeURI(file));
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        var html = await res.text();
+        var doc = new DOMParser().parseFromString(html, 'text/html');
+        var h1 = doc.querySelector('h1');
+        if (h1 && h1.textContent.trim()) return h1.textContent.trim();
+        var t = doc.querySelector('title');
+        if (t && t.textContent.trim()) return t.textContent.trim();
+      } catch (e) { /* fallthrough */ }
+      return file.replace(/\.html?$/i, '');
     }
-    rects.splice(idx, 1, a, b);
-  }
-  return rects;
-}
 
-function buildMosaicGrid(total, nums) {
-  boardEl.innerHTML = '';
-  var rects = splitSquare(total);
-  var base = currentSize === 3 ? 2.2
-           : currentSize === 4 ? 1.8
-           : currentSize === 5 ? 1.5
-           : 1.2;
-  for (var i = 0; i < rects.length; i++) {
-    var r = rects[i];
-    var n = nums[i];
-    var btn = document.createElement('button');
-    btn.className = 'cell';
-    btn.textContent = n;
-    btn.setAttribute('data-num', n);
-    btn.onclick = onCellClick;
-    btn.style.left = (r.x * 100) + '%';
-    btn.style.top = (r.y * 100) + '%';
-    btn.style.width = (r.w * 100) + '%';
-    btn.style.height = (r.h * 100) + '%';
-    var area = r.w * r.h;
-    var avgArea = 1 / total;
-    var scale = Math.sqrt(area / avgArea);
-    var fs = base * Math.min(1.6, Math.max(0.7, scale));
-    btn.style.fontSize = fs.toFixed(2) + 'rem';
-    boardEl.appendChild(btn);
-  }
-}
-
-function buildNormalGrid(total, nums) {
-  boardEl.innerHTML = '';
-  var N = currentSize;
-  var cellPct = 100 / N;
-  var base = currentSize === 3 ? 2.4
-            : currentSize === 4 ? 2.0
-            : currentSize === 5 ? 1.6
-            : 1.3;
-  for (var row = 0; row < N; row++) {
-    for (var col = 0; col < N; col++) {
-      var idx = row * N + col;
-      var n = nums[idx];
-      var btn = document.createElement('button');
-      btn.className = 'cell';
-      btn.textContent = n;
-      btn.setAttribute('data-num', n);
-      btn.onclick = onCellClick;
-      btn.style.left = (col * cellPct) + '%';
-      btn.style.top = (row * cellPct) + '%';
-      btn.style.width = cellPct + '%';
-      btn.style.height = cellPct + '%';
-      btn.style.fontSize = base + 'rem';
-      boardEl.appendChild(btn);
+    if (!EXERCISES.length) {
+      setStatus('Список упражнений пуст', false);
+      listEl.innerHTML = '<div class="empty">Пока нет упражнений.</div>';
+      return;
     }
-  }
-}
 
-function buildGrid() {
-  var total = currentSize * currentSize;
-  var nums = [];
-  for (var i = 1; i <= total; i++) nums.push(i);
-  shuffle(nums);
+    var entries = await Promise.all(EXERCISES.map(async function (ex) {
+      return { file: ex.file, name: await getName(ex.file) };
+    }));
 
-  if (currentMode === 'normal') {
-    buildNormalGrid(total, nums);
-  } else {
-    buildMosaicGrid(total, nums);
-  }
-}
+    entries.forEach(function (e) {
+      var a = document.createElement('a');
+      a.className = 'item';
+      a.href = encodeURI(e.file);
+      var nameSpan = document.createElement('span');
+      nameSpan.textContent = e.name;
+      var arrow = document.createElement('span');
+      arrow.className = 'arrow';
+      arrow.textContent = '→';
+      a.appendChild(nameSpan);
+      a.appendChild(arrow);
+      listEl.appendChild(a);
+    });
 
-function resetGame() {
-  if (timerId) clearInterval(timerId);
-  next = 1;
-  startTime = null;
-  solved = false;
-  timerEl.textContent = '00.00';
-  nextEl.textContent = '1';
-  messageEl.textContent = '';
-  buildGrid();
-}
-
-function onCellClick() {
-  if (solved) return;
-  var num = parseInt(this.getAttribute('data-num'), 10);
-  var total = currentSize * currentSize;
-  var cell = this;
-
-  if (num !== next) {
-    cell.classList.add('wrong');
-    setTimeout(function() { cell.classList.remove('wrong'); }, 300);
-    return;
-  }
-
-  if (next === 1) {
-    startTime = Date.now();
-    if (timerId) clearInterval(timerId);
-    timerId = setInterval(function() {
-      if (!solved) timerEl.textContent = formatTime(Date.now() - startTime);
-    }, 50);
-  }
-
-  if (hardcore) {
-    // Хардкор: короткая зелёная вспышка, потом обратно к обычному виду.
-    // Класс снимаем через 180 мс, чтобы клетка НЕ оставалась закрашенной.
-    cell.classList.add('flash-ok');
-    setTimeout(function() {
-      cell.classList.remove('flash-ok');
-    }, 180);
-  } else {
-    // Обычные режимы: клетка остаётся закрашенной
-    cell.classList.add('done');
-  }
-
-  next++;
-  nextEl.textContent = next > total ? '✓' : next;
-
-  if (next === total + 1) {
-    solved = true;
-    clearInterval(timerId);
-    var elapsed = Date.now() - startTime;
-    timerEl.textContent = formatTime(elapsed);
-    messageEl.textContent = 'Готово! ' + formatTime(elapsed) + ' с (' + currentSize + '×' + currentSize + ', ' +
-      modeName(currentMode).toLowerCase() + (hardcore ? ', хардкор' : '') + ')';
-    addRecord(elapsed);
-
-    // Автоперемешивание — только эксперт без хардкора
-    if (currentMode === 'expert' && !hardcore) {
-      setTimeout(function() {
-        resetGame();
-        messageEl.textContent = 'Новая таблица (эксперт) готова — поехали!';
-      }, 1200);
-    }
-  }
-}
-
-function addRecord(ms) {
-  attempt++;
-  var emptyEl = historyListEl.querySelector('.empty');
-  if (emptyEl) historyListEl.removeChild(emptyEl);
-
-  var rec = document.createElement('div');
-  rec.className = 'record';
-
-  var label = document.createElement('span');
-  label.className = 'label';
-  label.textContent = 'Попытка ' + attempt;
-
-  var tagSize = document.createElement('span');
-  tagSize.className = 'tag';
-  tagSize.textContent = currentSize + '×' + currentSize;
-
-  var tagMode = document.createElement('span');
-  tagMode.className = 'tag' + (currentMode === 'expert' ? ' expert' : '');
-  tagMode.textContent = modeName(currentMode).toLowerCase();
-
-  label.appendChild(tagSize);
-  label.appendChild(tagMode);
-
-  if (hardcore) {
-    var tagHard = document.createElement('span');
-    tagHard.className = 'tag hardcore';
-    tagHard.textContent = 'хардкор';
-    label.appendChild(tagHard);
-  }
-
-  var time = document.createElement('span');
-  time.className = 'time';
-  time.textContent = formatTime(ms) + ' с';
-
-  rec.appendChild(label);
-  rec.appendChild(time);
-
-  if (historyListEl.firstChild) {
-    historyListEl.insertBefore(rec, historyListEl.firstChild);
-  } else {
-    historyListEl.appendChild(rec);
-  }
-}
-
-newBtn.onclick = resetGame;
-
-sizeLabelEl.textContent = currentSize + '×' + currentSize;
-modeLabelEl.textContent = modeName(currentMode);
-hardLabelEl.textContent = 'Выкл';
-setupSizeButtons();
-setupModeButtons();
-setupHardButtons();
-resetGame();
+    setStatus('Упражнений: ' + entries.length, false);
+  })();
 </script>
 </body>
 </html>
