@@ -7,99 +7,233 @@
 <style>
   * { box-sizing: border-box; }
   body {
-    margin: 0; min-height: 100vh;
-    display: flex; flex-direction: column; align-items: center;
-    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-    background: #0f172a; color: #e2e8f0; padding: 16px;
-  }
-  h1 { font-size: 22px; margin: 8px 0 4px; }
-  .sub { color: #94a3b8; font-size: 14px; margin-bottom: 12px; text-align: center; }
-
-  .sizes {
-    display: flex; gap: 8px; flex-wrap: wrap; justify-content: center;
-    margin-bottom: 14px;
-  }
-  .size-btn {
-    padding: 8px 14px; border: 1px solid #334155; border-radius: 999px;
-    background: #1e293b; color: #e2e8f0; font-size: 14px; cursor: pointer;
-  }
-  .size-btn.active {
-    background: #38bdf8; color: #0f172a; border-color: #38bdf8; font-weight: 700;
-  }
-
-  .bar {
-    display: flex; gap: 16px; align-items: center;
-    margin-bottom: 12px; flex-wrap: wrap; justify-content: center;
-  }
-  .stat { font-size: 14px; color: #94a3b8; }
-  .stat b { color: #e2e8f0; font-size: 17px; }
-
-  button.restart {
-    padding: 10px 20px; border: none; border-radius: 10px;
-    background: #38bdf8; color: #0f172a; font-weight: 700;
-    font-size: 15px; cursor: pointer;
-  }
-  button.restart:active { transform: scale(0.97); }
-
-  .grid {
-    display: grid; gap: 6px;
-    width: 100%; max-width: 520px;
+    font-family: 'Comic Sans MS', Arial, sans-serif;
+    background: #f6f6f6;
+    display: flex; justify-content: center; align-items: flex-start;
+    min-height: 100vh; margin: 0; padding: 15px; color: #141414;
   }
   .card {
+    background: #fff; border-radius: 12px; padding: 25px 30px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    border: 1px solid #e8e8e8; text-align: center;
+    max-width: 600px; width: 100%;
+  }
+  h1 { margin: 0 0 6px; font-size: 24px; font-weight: bold; }
+  .sub { color: #757575; font-size: 13px; margin-bottom: 14px; }
+
+  /* ===== Переключатели (как .modes / .pickers) ===== */
+  .pickers { display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; }
+  .picker-row {
+    display: flex; gap: 8px; justify-content: center;
+    flex-wrap: wrap; align-items: center;
+  }
+  .picker-group {
+    display: flex; gap: 6px; align-items: center;
+    flex-wrap: wrap; justify-content: center;
+  }
+  .picker-label {
+    font-size: 13px; color: #757575; font-weight: bold;
+    margin-right: 2px;
+  }
+  .size-btn, .kind-btn {
+    font-family: inherit; font-size: 13px; font-weight: bold;
+    padding: 8px 16px; border: none; border-radius: 0;
+    background: #f0f0f0; color: #757575; cursor: pointer;
+    transition: all 0.15s;
+  }
+  .size-btn:hover, .kind-btn:hover { background: #e6e6e6; }
+  .size-btn.active, .kind-btn.active {
+    background: #FFD502; color: #141414;
+    box-shadow: 0 2px 0 #c9a800;
+  }
+
+  /* ===== Статистика ===== */
+  .stats {
+    font-size: 14px; color: #757575;
+    display: flex; justify-content: space-around; align-items: center;
+    margin: 4px 0 10px; gap: 8px; flex-wrap: wrap;
+  }
+  .stats .stat { display: inline-flex; align-items: center; gap: 6px; }
+  .stats b { color: #141414; }
+
+  /* ===== Сообщение ===== */
+  .msg-wrap {
+    min-height: 48px; display: flex; justify-content: center;
+    align-items: center; margin-top: 6px;
+  }
+  .msg-note {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 15px; font-weight: bold;
+    padding: 8px 14px;
+    border-radius: 4px;
+    background: #f0f7ec;
+    border-left: 4px solid #4caf50;
+    color: #2e5a2e;
+    width: 100%;
+    max-width: 320px;
+    opacity: 0;
+    transform: translateY(3px);
+    transition: opacity 0.2s, transform 0.2s;
+  }
+  .msg-note.show { opacity: 1; transform: translateY(0); }
+  .msg-note.error {
+    background: #fbf0f0;
+    border-left-color: #e07a7a;
+    color: #8a2b2b;
+  }
+  .ico {
+    flex: 0 0 auto;
+    width: 20px; height: 20px; border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: bold; line-height: 1;
+    background: #4caf50; color: #fff;
+  }
+  .ico.error { background: #e07a7a; }
+
+  /* ===== Игровое поле ===== */
+  .grid {
+    display: grid; gap: 8px;
+    width: 100%; max-width: 480px;
+    margin: 0 auto;
+  }
+  .cell {
     aspect-ratio: 1 / 1;
     display: flex; align-items: center; justify-content: center;
-    background: #334155; border-radius: 10px;
-    font-size: clamp(18px, 5vw, 32px); cursor: pointer; user-select: none;
-    transition: background 0.15s;
+    background: #fafafa;
+    border: 2px solid #e8e8e8;
+    border-radius: 8px;
+    font-size: clamp(20px, 6vw, 32px);
+    font-weight: bold;
+    cursor: pointer; user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    transition: background 0.15s, border-color 0.15s, transform 0.1s;
+    color: transparent;
   }
-  .card:hover { background: #475569; }
-  .card.open { background: #38bdf8; }
-  .card.done { background: #22c55e; cursor: default; }
-  .card.done:hover { background: #22c55e; }
+  .cell:hover { border-color: #FFD502; }
+  .cell:active { transform: translateY(1px); }
 
-  .msg {
-    margin-top: 14px; min-height: 24px; font-weight: 700;
-    text-align: center; font-size: 16px;
+  /* Открытая карточка */
+  .cell.open {
+    background: #fff;
+    border-color: #FFD502;
+    color: #141414;
+    box-shadow: 0 2px 0 #c9a800;
   }
-  .msg.ok { color: #22c55e; }
+
+  /* Найденная пара — LEGO-зелёная */
+  .cell.done {
+    background: linear-gradient(145deg, #5cb85c, #4B9F4A);
+    border-color: #2e6b2e;
+    color: #fff;
+    cursor: default;
+    box-shadow:
+      0 3px 0 #2e6b2e,
+      0 4px 6px rgba(46,107,46,0.25),
+      inset 0 2px 0 rgba(255,255,255,0.35);
+    text-shadow: 0 1px 0 rgba(0,0,0,0.25);
+  }
+  .cell.done:hover { border-color: #2e6b2e; }
+
+  /* Ошибка — LEGO-красная вспышка */
+  .cell.wrong {
+    background: linear-gradient(145deg, #e53935, #C4281C);
+    border-color: #8a1a12;
+    color: #fff;
+    box-shadow:
+      0 3px 0 #8a1a12,
+      0 0 0 3px rgba(196,40,28,0.25),
+      inset 0 2px 0 rgba(255,255,255,0.3);
+    text-shadow: 0 1px 0 rgba(0,0,0,0.25);
+  }
+
+  /* ===== Кнопка «Новая игра» ===== */
+  .buttons { display: flex; gap: 10px; justify-content: center; margin-top: 14px; flex-wrap: wrap; }
+  .reset {
+    font-family: inherit; font-size: 13px; font-weight: bold;
+    padding: 10px 24px; border: none; border-radius: 0;
+    cursor: pointer; transition: all 0.1s;
+    background: #FFD502; color: #141414; box-shadow: 0 3px 0 #c9a800;
+  }
+  .reset:hover { background: #ffe14d; }
+  .reset:active { transform: translateY(2px); box-shadow: 0 1px 0 #c9a800; }
+
+  @media (max-width: 420px) {
+    h1 { font-size: 20px; }
+    .card { padding: 20px 16px; }
+    .size-btn, .kind-btn { font-size: 12px; padding: 7px 12px; }
+    .grid { gap: 6px; }
+  }
 </style>
 </head>
 <body>
+<div class="card">
   <h1>Мемори</h1>
   <div class="sub">Выбери поле и найди все пары</div>
 
-  <div class="sizes" id="sizes"></div>
+  <div class="pickers">
+    <div class="picker-row" id="sizesRow">
+      <span class="picker-label">Поле:</span>
+      <!-- кнопки размеров вставит скрипт -->
+    </div>
+    <div class="picker-row" id="kindsRow">
+      <span class="picker-label">Что ищем:</span>
+      <div class="picker-group" id="kindsGroup">
+        <button class="kind-btn active" data-kind="animals">Картинки</button>
+        <button class="kind-btn" data-kind="numbers">Цифры</button>
+      </div>
+    </div>
+  </div>
 
-  <div class="bar">
-    <div class="stat">Ходы: <b id="moves">0</b></div>
-    <div class="stat">Пары: <b id="pairs">0</b></div>
-    <button class="restart" id="start">Новая игра</button>
+  <div class="stats">
+    <span class="stat">Ходы: <b id="moves">0</b></span>
+    <span class="stat">Пары: <b id="pairs">0/0</b></span>
+  </div>
+
+  <div class="msg-wrap">
+    <div class="msg-note" id="message">
+      <span class="ico" id="msgIco">✓</span>
+      <span id="msgText">Победа!</span>
+    </div>
   </div>
 
   <div class="grid" id="grid"></div>
-  <div class="msg" id="msg"></div>
+
+  <div class="buttons">
+    <button class="reset" id="start">Новая игра</button>
+  </div>
+</div>
 
 <script>
-  // все размеры: строки × столбцы. Всего карточек должно быть чётным.
+  /* ============================================================
+     РАЗМЕРЫ ПОЛЯ: rows × cols. Всего карточек чётное.
+     ============================================================ */
   const SIZES = [
-    { rows: 3, cols: 4 },  // 12 карточек → 6 пар
-    { rows: 4, cols: 4 },  // 16 → 8 пар
-    { rows: 4, cols: 5 },  // 20 → 10 пар
-    { rows: 5, cols: 6 },  // 30 → 15 пар
-    { rows: 6, cols: 6 },  // 36 → 18 пар
+    { rows: 3, cols: 4, label: '3×4' },
+    { rows: 4, cols: 4, label: '4×4' },
+    { rows: 4, cols: 5, label: '4×5' },
+    { rows: 5, cols: 6, label: '5×6' },
+    { rows: 6, cols: 6, label: '6×6' },
   ];
 
-  const POOL = ['🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼','🐨','🐯','🦁','🐮',
-                '🐷','🐸','🐵','🐔','🦄','🐙','🦋','🐢','🐬','🦉'];
+  const ANIMALS = ['🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼','🐨','🐯','🦁','🐮',
+                   '🐷','🐸','🐵','🐔','🦄','🐙','🦋','🐢','🐬','🦉'];
 
-  const sizesEl = document.getElementById('sizes');
-  const gridEl  = document.getElementById('grid');
+  const NUMBERS = ['1','2','3','4','5','6','7','8','9',
+                   '10','11','12','13','14','15','16','17','18',
+                   '19','20','21','22'];
+
+  const gridEl = document.getElementById('grid');
   const movesEl = document.getElementById('moves');
   const pairsEl = document.getElementById('pairs');
-  const msgEl   = document.getElementById('msg');
+  const msgEl = document.getElementById('message');
+  const msgIco = document.getElementById('msgIco');
+  const msgText = document.getElementById('msgText');
   const startBtn = document.getElementById('start');
+  const sizesRow = document.getElementById('sizesRow');
+  const kindsGroup = document.getElementById('kindsGroup');
 
-  let currentSize = SIZES[1]; // по умолчанию 4×4
+  let currentSize = SIZES[1];        // по умолчанию 4×4
+  let currentKind = 'animals';       // 'animals' | 'numbers'
   let firstCard = null;
   let lock = false;
   let moves = 0;
@@ -114,27 +248,58 @@
     return arr;
   }
 
-  // кнопки выбора размера
-  SIZES.forEach((s, i) => {
-    const btn = document.createElement('button');
-    btn.className = 'size-btn' + (s === currentSize ? ' active' : '');
-    btn.textContent = s.rows + '×' + s.cols;
-    btn.addEventListener('click', () => {
-      currentSize = s;
-      document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      newGame();
-    });
-    sizesEl.appendChild(btn);
-  });
+  /* ===== Кнопки размеров ===== */
+  function setupSizeButtons() {
+    // очищаем всё, кроме подписи
+    const label = sizesRow.querySelector('.picker-label');
+    sizesRow.innerHTML = '';
+    if (label) sizesRow.appendChild(label);
 
+    SIZES.forEach((s) => {
+      const btn = document.createElement('button');
+      btn.className = 'size-btn' + (s === currentSize ? ' active' : '');
+      btn.textContent = s.label;
+      btn.addEventListener('click', () => {
+        currentSize = s;
+        setupSizeButtons();
+        newGame();
+      });
+      sizesRow.appendChild(btn);
+    });
+  }
+
+  /* ===== Кнопки «Картинки / Цифры» ===== */
+  function setupKindButtons() {
+    const btns = kindsGroup.querySelectorAll('.kind-btn');
+    btns.forEach((b) => {
+      b.className = 'kind-btn' + (b.dataset.kind === currentKind ? ' active' : '');
+      b.onclick = () => {
+        currentKind = b.dataset.kind;
+        setupKindButtons();
+        newGame();
+      };
+    });
+  }
+
+  /* ===== Сообщение ===== */
+  function hideMessage() {
+    msgEl.classList.remove('show', 'error');
+  }
+  function showSuccess(text) {
+    msgEl.classList.remove('error');
+    msgIco.textContent = '✓';
+    msgIco.classList.remove('error');
+    msgText.textContent = text;
+    msgEl.classList.add('show');
+  }
+
+  /* ===== Новая игра ===== */
   function newGame() {
     firstCard = null;
     lock = false;
     moves = 0;
     pairsFound = 0;
-    msgEl.textContent = '';
-    msgEl.className = 'msg';
+    hideMessage();
 
     const totalCards = currentSize.rows * currentSize.cols;
     totalPairs = totalCards / 2;
@@ -142,71 +307,79 @@
     movesEl.textContent = '0';
     pairsEl.textContent = '0/' + totalPairs;
 
-    // берём нужное число разных эмодзи и дублируем
-    const chosen = shuffle([...POOL]).slice(0, totalPairs);
+    const pool = currentKind === 'numbers' ? NUMBERS : ANIMALS;
+    const chosen = shuffle([...pool]).slice(0, totalPairs);
     const deck = shuffle([...chosen, ...chosen]);
 
     gridEl.style.gridTemplateColumns = 'repeat(' + currentSize.cols + ', 1fr)';
     gridEl.innerHTML = '';
 
-    deck.forEach(emoji => {
-      const card = document.createElement('div');
-      card.className = 'card';
-      card.dataset.emoji = emoji;
-      card.dataset.open = '0';
-      card.addEventListener('click', () => onCardClick(card));
-      gridEl.appendChild(card);
+    deck.forEach((symbol) => {
+      const cell = document.createElement('div');
+      cell.className = 'cell';
+      cell.dataset.symbol = symbol;
+      cell.dataset.open = '0';
+      cell.addEventListener('click', () => onCellClick(cell));
+      gridEl.appendChild(cell);
     });
   }
 
-  function onCardClick(card) {
+  /* ===== Клик по карточке ===== */
+  function onCellClick(cell) {
     if (lock) return;
-    if (card.dataset.open === '1') return;
-    if (card.classList.contains('done')) return;
+    if (cell.dataset.open === '1') return;
+    if (cell.classList.contains('done')) return;
 
-    card.textContent = card.dataset.emoji;
-    card.classList.add('open');
-    card.dataset.open = '1';
+    cell.textContent = cell.dataset.symbol;
+    cell.classList.add('open');
+    cell.dataset.open = '1';
 
     if (!firstCard) {
-      firstCard = card;
+      firstCard = cell;
       return;
     }
 
     moves++;
     movesEl.textContent = moves;
 
-    if (firstCard.dataset.emoji === card.dataset.emoji) {
+    if (firstCard.dataset.symbol === cell.dataset.symbol) {
+      // пара найдена
       firstCard.classList.add('done');
-      card.classList.add('done');
+      cell.classList.add('done');
       firstCard.classList.remove('open');
-      card.classList.remove('open');
+      cell.classList.remove('open');
       firstCard = null;
       pairsFound++;
       pairsEl.textContent = pairsFound + '/' + totalPairs;
 
       if (pairsFound === totalPairs) {
-        msgEl.textContent = 'Победа за ' + moves + ' ходов! 🏆';
-        msgEl.className = 'msg ok';
+        showSuccess('Победа за ' + moves + ' ходов!');
       }
     } else {
+      // ошибка — обе карточки вспыхивают красным
       lock = true;
       const a = firstCard;
-      const b = card;
+      const b = cell;
+      a.classList.add('wrong');
+      b.classList.add('wrong');
       setTimeout(() => {
         a.textContent = '';
-        a.classList.remove('open');
+        a.classList.remove('open', 'wrong');
         a.dataset.open = '0';
         b.textContent = '';
-        b.classList.remove('open');
+        b.classList.remove('open', 'wrong');
         b.dataset.open = '0';
         firstCard = null;
         lock = false;
-      }, 700);
+      }, 750);
     }
   }
 
   startBtn.addEventListener('click', newGame);
+
+  // инициализация
+  setupSizeButtons();
+  setupKindButtons();
   newGame();
 </script>
 </body>
