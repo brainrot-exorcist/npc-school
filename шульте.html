@@ -5,123 +5,271 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Таблицы Шульте</title>
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+  * { box-sizing: border-box; }
   body {
-    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-    background: #1a1a2e; color: #eee;
-    display: flex; flex-direction: column; align-items: center;
-    min-height: 100vh; padding: 20px; gap: 16px;
+    font-family: 'Comic Sans MS', Arial, sans-serif;
+    background: #f6f6f6;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+    margin: 0;
+    padding: 15px;
+    color: #141414;
   }
-  h1 { font-size: 1.4rem; font-weight: 600; color: #e94560; }
-  .pickers { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
-  .picker-group { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; align-items: center; }
-  .picker-label { color: #888; font-size: 0.85rem; margin-right: 4px; }
-  .size-btn, .mode-btn, .hard-btn {
-    font-family: inherit; font-size: 0.95rem; padding: 8px 18px;
-    border: 2px solid #0f3460; border-radius: 10px;
-    background: transparent; color: #ccc; font-weight: 600;
-    cursor: pointer; transition: all 0.2s;
+  .card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 25px 30px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    border: 1px solid #e8e8e8;
+    text-align: center;
+    max-width: 600px;
+    width: 100%;
   }
-  .size-btn:hover, .mode-btn:hover, .hard-btn:hover { border-color: #1a4a7a; color: #fff; }
-  .size-btn.active { background: #e94560; border-color: #e94560; color: #fff; }
-  .mode-btn.active { background: #7b2cbf; border-color: #7b2cbf; color: #fff; }
-  .hard-btn.active { background: #c1121f; border-color: #c1121f; color: #fff; }
-  .stats {
-    display: flex; gap: 24px; font-size: 1.1rem;
-    background: #16213e; padding: 12px 28px; border-radius: 12px;
+  h1 {
+    margin: 0 0 14px; font-size: 24px; font-weight: bold;
+    color: #141414;
+  }
+
+  /* ===== Переключатели ===== */
+  .pickers { display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; }
+  .picker-row {
+    display: flex; gap: 8px; justify-content: center;
+    flex-wrap: wrap; align-items: center;
+  }
+  .picker-group {
+    display: flex; gap: 6px; align-items: center;
     flex-wrap: wrap; justify-content: center;
   }
-  .stats b { color: #4cc9f0; }
+  .picker-label {
+    font-size: 13px; color: #757575; font-weight: bold;
+    margin-right: 2px;
+  }
+  .size-btn, .mode-btn, .hard-btn {
+    font-family: inherit; font-size: 13px; font-weight: bold;
+    padding: 8px 16px; border: none; border-radius: 0;
+    background: #f0f0f0; color: #757575; cursor: pointer;
+    transition: all 0.15s;
+  }
+  .size-btn:hover, .mode-btn:hover, .hard-btn:hover { background: #e6e6e6; }
+  .size-btn.active, .mode-btn.active, .hard-btn.active {
+    background: #FFD502; color: #141414;
+    box-shadow: 0 2px 0 #c9a800;
+  }
+
+  /* ===== Статистика ===== */
+  .stats {
+    font-size: 14px; color: #757575;
+    display: flex; justify-content: space-around; align-items: center;
+    margin: 4px 0 10px; gap: 8px; flex-wrap: wrap;
+  }
+  .stats .stat { display: inline-flex; align-items: center; gap: 6px; }
+  .stats b { color: #141414; }
+
+  /* ===== Сообщение ===== */
+  .msg-wrap {
+    min-height: 48px; display: flex; justify-content: center;
+    align-items: center; margin-top: 6px;
+  }
+  .msg-note {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 15px; font-weight: bold;
+    padding: 8px 14px;
+    border-radius: 4px;
+    background: #f0f7ec;
+    border-left: 4px solid #4caf50;
+    color: #2e5a2e;
+    width: 100%;
+    max-width: 340px;
+    opacity: 0;
+    transform: translateY(3px);
+    transition: opacity 0.2s, transform 0.2s;
+  }
+  .msg-note.show { opacity: 1; transform: translateY(0); }
+  .msg-note.error {
+    background: #fbf0f0;
+    border-left-color: #e07a7a;
+    color: #8a2b2b;
+  }
+  .ico {
+    flex: 0 0 auto;
+    width: 20px; height: 20px; border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: bold; line-height: 1;
+    background: #4caf50; color: #fff;
+  }
+  .ico.error { background: #e07a7a; }
+
+  /* ===== Игровое поле ===== */
   #board {
     position: relative;
-    width: min(92vw, 480px);
+    width: 100%;
+    max-width: 480px;
     aspect-ratio: 1;
-    background: #16213e;
-    border-radius: 16px;
+    margin: 0 auto;
+    background: #fafafa;
+    border-radius: 10px;
+    border: 1px solid #e8e8e8;
     overflow: hidden;
   }
   .cell {
     position: absolute;
     display: flex; align-items: center; justify-content: center;
-    font-weight: 600;
-    background: #0f3460;
-    border: 2px solid #16213e;
-    border-radius: 0;
-    color: #e0e0e0; cursor: pointer;
-    transition: background 0.18s, color 0.18s;
+    font-weight: bold;
+    font-family: inherit;
+    background: #fff;
+    border: 2px solid #e8e8e8;
+    border-radius: 8px;
+    color: #141414; cursor: pointer;
+    transition: background 0.15s, color 0.15s, border-color 0.15s, transform 0.1s;
     user-select: none; -webkit-tap-highlight-color: transparent;
     overflow: hidden;
   }
-  /* Найденные клетки в обычном режиме (не хардкор) */
-  .cell.done { background: #1b3a1b; color: #4caf50 !important; cursor: default; }
-  /* Неверный клик — короткая красная вспышка */
-  .cell.wrong { background: #5a1a1a; }
-  /* Верный клик в хардкоре — короткая зелёная вспышка, затем возврат */
-  .cell.flash-ok { background: #2d6a2d; color: #b6ffb6 !important; }
+  .cell:hover { border-color: #FFD502; transform: translateY(-1px); }
+  .cell:active { transform: translateY(0); }
 
-  button.action {
-    font-family: inherit; font-size: 1rem; padding: 12px 28px;
-    border: none; border-radius: 10px; background: #e94560; color: #fff;
-    font-weight: 600; cursor: pointer;
+  /* ===== LEGO-зелёный: найденная клетка ===== */
+  .cell.done {
+    background: linear-gradient(145deg, #5cb85c, #4B9F4A);
+    color: #fff !important;
+    border-color: #2e6b2e;
+    box-shadow:
+      0 3px 0 #2e6b2e,
+      0 4px 6px rgba(46, 107, 46, 0.25),
+      inset 0 2px 0 rgba(255,255,255,0.35);
+    cursor: default;
+    text-shadow: 0 1px 0 rgba(0,0,0,0.25);
   }
+  .cell.done:hover { border-color: #2e6b2e; transform: none; }
+
+  /* ===== LEGO-красный: ошибка ===== */
+  .cell.wrong {
+    background: linear-gradient(145deg, #e53935, #C4281C);
+    color: #fff !important;
+    border-color: #8a1a12;
+    box-shadow:
+      0 3px 0 #8a1a12,
+      0 4px 6px rgba(138, 26, 18, 0.25),
+      inset 0 2px 0 rgba(255,255,255,0.3);
+    text-shadow: 0 1px 0 rgba(0,0,0,0.25);
+  }
+
+  /* ===== LEGO-зелёная вспышка: верный клик в хардкоре ===== */
+  .cell.flash-ok {
+    background: linear-gradient(145deg, #5cb85c, #4B9F4A);
+    color: #fff !important;
+    border-color: #2e6b2e;
+    box-shadow:
+      0 3px 0 #2e6b2e,
+      0 0 0 3px rgba(75, 159, 74, 0.35),
+      inset 0 2px 0 rgba(255,255,255,0.35);
+    text-shadow: 0 1px 0 rgba(0,0,0,0.25);
+  }
+
+  /* ===== Кнопка «Новая таблица» ===== */
+  .buttons { display: flex; gap: 10px; justify-content: center; margin-top: 14px; flex-wrap: wrap; }
+  .reset {
+    font-family: inherit; font-size: 13px; font-weight: bold;
+    padding: 10px 24px; border: none; border-radius: 0;
+    cursor: pointer; transition: all 0.1s;
+    background: #FFD502; color: #141414; box-shadow: 0 3px 0 #c9a800;
+  }
+  .reset:hover { background: #ffe14d; }
+  .reset:active { transform: translateY(2px); box-shadow: 0 1px 0 #c9a800; }
+
+  /* ===== История ===== */
   .history {
-    width: min(92vw, 480px); background: #16213e;
-    border-radius: 12px; padding: 14px 18px;
+    width: 100%; max-width: 480px; margin: 16px auto 0;
+    background: #fbfbfb; border-radius: 8px;
+    border: 1px solid #e8e8e8;
+    padding: 14px 18px; text-align: left;
   }
-  .history h2 { font-size: 1rem; color: #4cc9f0; margin-bottom: 8px; }
+  .history h2 {
+    font-size: 14px; margin: 0 0 8px; font-weight: bold;
+    color: #141414;
+  }
   .record {
     display: flex; justify-content: space-between; align-items: center;
-    padding: 10px 4px; border-bottom: 1px solid #0f3460;
+    padding: 10px 4px; border-bottom: 1px solid #eee;
     gap: 10px;
   }
   .record:last-child { border-bottom: none; }
-  .record .label { color: #aaa; font-size: 0.9rem; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-  .record .tag {
-    font-size: 0.7rem; padding: 2px 6px; border-radius: 6px;
-    background: #0f3460; color: #aaa;
+  .record .label {
+    color: #757575; font-size: 13px;
+    display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
   }
-  .record .tag.expert { background: #3a1a5a; color: #c49eff; }
-  .record .tag.hardcore { background: #5a1a1a; color: #ff9a9a; }
-  .record .time { color: #4cc9f0; font-weight: 800; font-size: 1.15rem; font-variant-numeric: tabular-nums; }
-  .empty { color: #666; font-style: italic; font-size: 0.9rem; }
-  #message { color: #4cc9f0; font-weight: 600; min-height: 1.4em; text-align: center; }
-  .hint { color: #666; font-size: 0.8rem; text-align: center; max-width: 92vw; }
+  .record .tag {
+    font-size: 11px; padding: 2px 6px; border-radius: 4px;
+    background: #f0f0f0; color: #757575; font-weight: bold;
+  }
+  .record .tag.expert { background: #f0e6ff; color: #7b2cbf; }
+  .record .tag.hardcore { background: #fdf0f0; color: #e94560; }
+  .record .time {
+    color: #141414; font-weight: bold; font-size: 16px;
+    font-variant-numeric: tabular-nums;
+  }
+  .empty { color: #999; font-style: italic; font-size: 13px; }
+
+  .hint {
+    color: #999; font-size: 12px; text-align: center;
+    margin: 12px auto 0; max-width: 480px; line-height: 1.4;
+  }
+  .hint b { color: #757575; }
+
+  @media (max-width: 420px) {
+    h1 { font-size: 20px; }
+    .card { padding: 20px 16px; }
+    .size-btn, .mode-btn, .hard-btn { font-size: 12px; padding: 7px 12px; }
+  }
 </style>
 </head>
 <body>
+<div class="card">
   <h1>Таблицы Шульте</h1>
 
   <div class="pickers">
-    <div class="picker-group" id="sizePicker">
+    <div class="picker-row" id="sizePicker">
       <span class="picker-label">Размер:</span>
       <button class="size-btn" data-size="3">3×3</button>
       <button class="size-btn" data-size="4">4×4</button>
       <button class="size-btn active" data-size="5">5×5</button>
       <button class="size-btn" data-size="6">6×6</button>
     </div>
-    <div class="picker-group" id="modePicker">
-      <span class="picker-label">Режим:</span>
-      <button class="mode-btn active" data-mode="normal">Обычный</button>
-      <button class="mode-btn" data-mode="expert">Эксперт</button>
-    </div>
-    <div class="picker-group" id="hardPicker">
-      <span class="picker-label">Хардкор:</span>
-      <button class="hard-btn" data-hard="off">Выкл</button>
-      <button class="hard-btn" data-hard="on">Вкл</button>
+    <div class="picker-row">
+      <div class="picker-group" id="modePicker">
+        <span class="picker-label">Режим:</span>
+        <button class="mode-btn active" data-mode="normal">Обычный</button>
+        <button class="mode-btn" data-mode="expert">Эксперт</button>
+      </div>
+      <div class="picker-group" id="hardPicker">
+        <span class="picker-label">Хардкор:</span>
+        <button class="hard-btn" data-hard="off">Выкл</button>
+        <button class="hard-btn active" data-hard="on">Вкл</button>
+      </div>
     </div>
   </div>
 
   <div class="stats">
-    <div>Размер: <b id="sizeLabel">5×5</b></div>
-    <div>Режим: <b id="modeLabel">Обычный</b></div>
-    <div>Хардкор: <b id="hardLabel">Выкл</b></div>
-    <div>Время: <b id="timer">00.00</b></div>
-    <div>Далее: <b id="next">1</b></div>
+    <span class="stat">Размер: <b id="sizeLabel">5×5</b></span>
+    <span class="stat">Режим: <b id="modeLabel">Обычный</b></span>
+    <span class="stat">Хардкор: <b id="hardLabel">Вкл</b></span>
+    <span class="stat">Время: <b id="timer">00.00</b></span>
+    <span class="stat">Далее: <b id="next">1</b></span>
   </div>
 
-  <div id="message"></div>
+  <div class="msg-wrap">
+    <div class="msg-note" id="message">
+      <span class="ico" id="msgIco">✓</span>
+      <span id="msgText">Готово!</span>
+    </div>
+  </div>
+
   <div id="board"></div>
-  <button class="action" id="newBtn">Новая таблица</button>
+
+  <div class="buttons">
+    <button class="reset" id="newBtn">Новая таблица</button>
+  </div>
 
   <div class="history">
     <h2>История результатов</h2>
@@ -130,13 +278,14 @@
 
   <p class="hint">
     <b>Режим</b> задаёт вид таблицы: обычная ровная сетка или мозаика из прямоугольников.<br>
-    <b>Хардкор</b> — найденные клетки <b>не остаются закрашенными</b>, но при верном клике коротко вспыхивают зелёным, чтобы было видно, что нажатие засчиталось.
+    <b>Хардкор</b> — найденные клетки <b>не остаются закрашенными</b>, но при верном клике коротко вспыхивают зелёным.
   </p>
+</div>
 
 <script>
 var currentSize = 5;
 var currentMode = 'normal';
-var hardcore = false;
+var hardcore = true;
 var next = 1;
 var startTime = null;
 var timerId = null;
@@ -150,6 +299,8 @@ var sizeLabelEl = document.getElementById('sizeLabel');
 var modeLabelEl = document.getElementById('modeLabel');
 var hardLabelEl = document.getElementById('hardLabel');
 var messageEl = document.getElementById('message');
+var msgIco = document.getElementById('msgIco');
+var msgText = document.getElementById('msgText');
 var historyListEl = document.getElementById('historyList');
 var sizePicker = document.getElementById('sizePicker');
 var modePicker = document.getElementById('modePicker');
@@ -164,6 +315,17 @@ function formatTime(ms) {
   var s = (ms / 1000).toFixed(2);
   while (s.length < 5) s = '0' + s;
   return s;
+}
+
+function hideMessage() {
+  messageEl.classList.remove('show', 'error');
+}
+function showSuccess(text) {
+  messageEl.classList.remove('error');
+  msgIco.textContent = '✓';
+  msgIco.classList.remove('error');
+  msgText.textContent = text;
+  messageEl.classList.add('show');
 }
 
 function setupSizeButtons() {
@@ -328,7 +490,7 @@ function resetGame() {
   solved = false;
   timerEl.textContent = '00.00';
   nextEl.textContent = '1';
-  messageEl.textContent = '';
+  hideMessage();
   buildGrid();
 }
 
@@ -353,14 +515,11 @@ function onCellClick() {
   }
 
   if (hardcore) {
-    // Хардкор: короткая зелёная вспышка, потом обратно к обычному виду.
-    // Класс снимаем через 180 мс, чтобы клетка НЕ оставалась закрашенной.
     cell.classList.add('flash-ok');
     setTimeout(function() {
       cell.classList.remove('flash-ok');
     }, 180);
   } else {
-    // Обычные режимы: клетка остаётся закрашенной
     cell.classList.add('done');
   }
 
@@ -372,15 +531,14 @@ function onCellClick() {
     clearInterval(timerId);
     var elapsed = Date.now() - startTime;
     timerEl.textContent = formatTime(elapsed);
-    messageEl.textContent = 'Готово! ' + formatTime(elapsed) + ' с (' + currentSize + '×' + currentSize + ', ' +
-      modeName(currentMode).toLowerCase() + (hardcore ? ', хардкор' : '') + ')';
+    showSuccess('Готово! ' + formatTime(elapsed) + ' с (' + currentSize + '×' + currentSize + ', ' +
+      modeName(currentMode).toLowerCase() + (hardcore ? ', хардкор' : '') + ')');
     addRecord(elapsed);
 
-    // Автоперемешивание — только эксперт без хардкора
     if (currentMode === 'expert' && !hardcore) {
       setTimeout(function() {
         resetGame();
-        messageEl.textContent = 'Новая таблица (эксперт) готова — поехали!';
+        showSuccess('Новая таблица (эксперт) готова — поехали!');
       }, 1200);
     }
   }
@@ -434,7 +592,7 @@ newBtn.onclick = resetGame;
 
 sizeLabelEl.textContent = currentSize + '×' + currentSize;
 modeLabelEl.textContent = modeName(currentMode);
-hardLabelEl.textContent = 'Выкл';
+hardLabelEl.textContent = hardcore ? 'Вкл' : 'Выкл';
 setupSizeButtons();
 setupModeButtons();
 setupHardButtons();
