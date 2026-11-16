@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Умножение и деление</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'Comic Sans MS', Arial, sans-serif;
+    background: #f6f6f6;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    padding: 15px;
+    color: #141414;
+  }
+  .card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 25px 30px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    border: 1px solid #e8e8e8;
+    text-align: center;
+    max-width: 600px;
+    width: 100%;
+  }
+  h1 { color: #141414; margin: 0 0 14px; font-size: 24px; font-weight: bold; }
+
+  .modes { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-bottom: 14px; }
+  .modes button {
+    font-family: inherit; font-size: 13px; font-weight: bold;
+    padding: 8px 16px; border: none; border-radius: 0;
+    background: #f0f0f0; color: #757575; cursor: pointer;
+    transition: all 0.15s;
+  }
+  .modes button:hover { background: #e6e6e6; }
+  .modes button.active {
+    background: #FFD502; color: #141414;
+    box-shadow: 0 2px 0 #c9a800;
+  }
+
+  .task {
+    font-size: 48px; font-weight: bold; color: #141414;
+    display: flex; justify-content: center; align-items: center; gap: 10px;
+    margin: 16px 0;
+    flex-wrap: wrap;
+  }
+  input {
+    font-family: inherit; font-size: 48px; font-weight: bold;
+    width: 120px; text-align: center; border-radius: 8px;
+    border: 3px solid #FFD502; outline: none;
+    padding: 2px 0; color: #141414; background: #fff;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  input:focus { border-color: #141414; }
+  input.correct { border-color: #4caf50; background: #f0faf0; }
+  input.wrong { border-color: #e53935; background: #fdf0f0; }
+
+  /* ===== LEGO ===== */
+  .lego-wrap {
+    margin: 6px 0 4px; min-height: 90px;
+    display: flex; justify-content: center; align-items: center;
+    padding: 8px 0; overflow: hidden;
+    --stud: 26px;
+  }
+
+  .strips {
+    display: flex; flex-direction: column; gap: 6px;
+    transition: gap 0.35s ease;
+    width: max-content;
+  }
+  .strip {
+    display: flex; gap: 4px; padding: 6px;
+    border-radius: 6px;
+    background: linear-gradient(145deg, #f0d878, #d9b94e);
+    box-shadow:
+      0 4px 0 #a88f3a,
+      0 6px 6px rgba(80,70,40,0.15),
+      inset 0 2px 0 rgba(255,255,255,0.45);
+    transition: border-radius 0.35s ease, box-shadow 0.35s ease;
+    animation: stripPop 0.35s ease-out both;
+  }
+  @keyframes stripPop {
+    from { transform: scale(0.9); opacity: 0; }
+    to   { transform: scale(1);   opacity: 1; }
+  }
+  .stud {
+    width: var(--stud); height: var(--stud); border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #fff6c4, #e8cc66 60%, #c2a53e);
+    box-shadow:
+      inset 0 -3px 0 rgba(0,0,0,0.18),
+      inset 0 2px 0 rgba(255,255,255,0.55),
+      0 1px 2px rgba(0,0,0,0.18);
+  }
+
+  .strips.merged { gap: 0; }
+  .strips.merged .strip {
+    border-radius: 0;
+    box-shadow: inset 0 2px 0 rgba(255,255,255,0.45);
+  }
+  .strips.merged .strip:first-child {
+    border-top-left-radius: 6px; border-top-right-radius: 6px;
+    box-shadow: 0 0 0 #a88f3a, inset 0 2px 0 rgba(255,255,255,0.45);
+  }
+  .strips.merged .strip:last-child {
+    border-bottom-left-radius: 6px; border-bottom-right-radius: 6px;
+    box-shadow: 0 4px 0 #a88f3a, 0 6px 6px rgba(80,70,40,0.15), inset 0 2px 0 rgba(255,255,255,0.45);
+  }
+
+  /* ===== Единые иконки ===== */
+  .ico {
+    flex: 0 0 auto;
+    width: 18px; height: 18px; border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: bold; line-height: 1;
+    background: #4caf50; color: #fff;
+  }
+  .ico.error { background: #e07a7a; }
+  .msg-note .ico { width: 20px; height: 20px; font-size: 13px; }
+
+  .stats {
+    font-size: 14px; color: #757575;
+    display: flex; justify-content: space-around; align-items: center;
+    margin-top: 10px; gap: 8px; flex-wrap: wrap;
+  }
+  .stats .stat { display: inline-flex; align-items: center; gap: 6px; }
+  .stats b { color: #141414; }
+
+  /* Сообщение-лента */
+  .msg-wrap { min-height: 48px; display: flex; justify-content: center; align-items: center; margin-top: 6px; }
+  .msg-note {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 15px; font-weight: bold;
+    padding: 8px 14px;
+    border-radius: 4px;
+    background: #f0f7ec;
+    border-left: 4px solid #4caf50;
+    color: #2e5a2e;
+    width: 100%;
+    max-width: 280px;
+    opacity: 0;
+    transform: translateY(3px);
+    transition: opacity 0.2s, transform 0.2s;
+  }
+  .msg-note.show { opacity: 1; transform: translateY(0); }
+  .msg-note.error {
+    background: #fbf0f0;
+    border-left-color: #e07a7a;
+    color: #8a2b2b;
+  }
+
+  .best { font-size: 13px; color: #999; margin-top: 6px; }
+
+  .buttons { display: flex; gap: 10px; justify-content: center; margin-top: 14px; flex-wrap: wrap; }
+  .reset {
+    font-family: inherit; font-size: 13px; font-weight: bold;
+    padding: 10px 24px; border: none; border-radius: 0;
+    cursor: pointer; transition: all 0.1s;
+    background: #FFD502; color: #141414; box-shadow: 0 3px 0 #c9a800;
+  }
+  .reset:hover { background: #ffe14d; }
+  .reset:active { transform: translateY(2px); box-shadow: 0 1px 0 #c9a800; }
+
+  @media (max-width: 420px) {
+    .strip { padding: 4px; gap: 3px; }
+    .strips { gap: 5px; }
+    h1 { font-size: 20px; }
+    .task { font-size: 36px; }
+    input { font-size: 36px; width: 90px; }
+  }
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>Умножение и деление</h1>
+
+  <div class="modes" id="modes">
+    <button type="button" data-mode="mul" class="active">Умножение</button>
+    <button type="button" data-mode="div" class="active">Деление</button>
+  </div>
+
+  <div class="task">
+    <span id="expr">3 × 4 =</span>
+    <input id="answer" type="text" inputmode="numeric" autocomplete="off" autofocus>
+  </div>
+
+  <div class="lego-wrap" id="lego"></div>
+
+  <div class="stats">
+    <span class="stat"><span class="ico">✓</span> Верно: <b id="score">0</b></span>
+    <span class="stat"><span class="ico error">×</span> Ошибок: <b id="errors">0</b></span>
+  </div>
+
+  <div class="msg-wrap">
+    <div class="msg-note" id="message">
+      <span class="ico" id="msgIco">✓</span>
+      <span id="msgText">Молодец!</span>
+    </div>
+  </div>
+
+  <div class="best" id="best">🏆 Рекорд: 0</div>
+
+  <div class="buttons">
+    <button type="button" class="reset" id="btn-reset">Заново</button>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  var score = 0, errors = 0, best = 0;
+  var op = 'mul';
+  var mulOn = true;
+  var divOn = true;
+  var a = 0, b = 0;
+  var correctAnswer = 0;
+  var locked = false;
+  var inputTimer = null;
+  var advanceTimer = null;
+  var stepTimer = null;
+
+  var input = document.getElementById('answer');
+  var exprEl = document.getElementById('expr');
+  var legoEl = document.getElementById('lego');
+  var msgEl = document.getElementById('message');
+  var msgIco = document.getElementById('msgIco');
+  var msgText = document.getElementById('msgText');
+  var scoreEl = document.getElementById('score');
+  var errorsEl = document.getElementById('errors');
+  var bestEl = document.getElementById('best');
+  var cardEl = document.querySelector('.card');
+
+  function randFactor() { return Math.floor(Math.random() * 8) + 2; }
+
+  function clearTimers() {
+    if (inputTimer) { clearTimeout(inputTimer); inputTimer = null; }
+    if (advanceTimer) { clearTimeout(advanceTimer); advanceTimer = null; }
+    if (stepTimer) { clearTimeout(stepTimer); stepTimer = null; }
+  }
+  function updateStats() {
+    scoreEl.textContent = score;
+    errorsEl.textContent = errors;
+    bestEl.textContent = '🏆 Рекорд: ' + best;
+  }
+  function setActiveModes() {
+    var btns = document.querySelectorAll('#modes button');
+    for (var i = 0; i < btns.length; i++) {
+      var m = btns[i].getAttribute('data-mode');
+      if ((m === 'mul' && mulOn) || (m === 'div' && divOn)) {
+        btns[i].classList.add('active');
+      } else {
+        btns[i].classList.remove('active');
+      }
+    }
+  }
+  function hideMessage() {
+    msgEl.classList.remove('show', 'error');
+  }
+  function showSuccess() {
+    msgEl.classList.remove('error');
+    msgIco.textContent = '✓';
+    msgIco.classList.remove('error');
+    msgText.textContent = 'Молодец!';
+    msgEl.classList.add('show');
+  }
+  function showError(text) {
+    msgEl.classList.add('error');
+    msgIco.textContent = '×';
+    msgIco.classList.add('error');
+    msgText.textContent = text;
+    msgEl.classList.add('show');
+  }
+
+  function availWidth() {
+    var w = cardEl ? cardEl.clientWidth : 560;
+    return Math.max(200, w - 60);
+  }
+  function fitStud(perStrip) {
+    var avail = availWidth() - 20;
+    var gap = 4, pad = 12;
+    var s = Math.floor((avail - (perStrip - 1) * gap - pad) / perStrip);
+    if (s > 26) s = 26;
+    if (s < 8) s = 8;
+    legoEl.style.setProperty('--stud', s + 'px');
+  }
+  function makeStud() {
+    var s = document.createElement('div');
+    s.className = 'stud';
+    return s;
+  }
+  function makeStrips(count, perStrip, merged, centered) {
+    var strips = document.createElement('div');
+    strips.className = 'strips' + (merged ? ' merged' : '');
+    for (var r = 0; r < count; r++) {
+      var strip = document.createElement('div');
+      strip.className = 'strip';
+      strip.style.animationDelay = (r * 40) + 'ms';
+      for (var c = 0; c < perStrip; c++) strip.appendChild(makeStud());
+      strips.appendChild(strip);
+    }
+    if (centered) {
+      strips.style.margin = '0 auto';
+    } else {
+      strips.style.margin = '0';
+      strips.style.justifyContent = 'flex-start';
+    }
+    return strips;
+  }
+
+  function renderMulPieces() {
+    legoEl.innerHTML = '';
+    fitStud(a);
+    legoEl.appendChild(makeStrips(b, a, false, true));
+  }
+  function renderMulMerge(onDone) {
+    var strips = legoEl.querySelector('.strips');
+    if (!strips) { if (onDone) setTimeout(onDone, 200); return; }
+    strips.classList.add('merged');
+    stepTimer = setTimeout(function () {
+      stepTimer = null;
+      if (onDone) onDone();
+    }, 500);
+  }
+
+  function renderDivWhole() {
+    legoEl.innerHTML = '';
+    fitStud(a);
+    var strips = makeStrips(b, a, true, true);
+    legoEl.appendChild(strips);
+    requestAnimationFrame(function () {
+      strips.style.width = strips.offsetWidth + 'px';
+    });
+  }
+  function renderDivAnswer(onDone) {
+    var strips = legoEl.querySelector('.strips');
+    if (!strips) { if (onDone) setTimeout(onDone, 200); return; }
+
+    strips.classList.remove('merged');
+    strips.style.margin = '0 auto';
+
+    var splitTime = (b - 1) * 40 + 400 + 500;
+
+    stepTimer = setTimeout(function () {
+      stepTimer = null;
+      while (strips.children.length > 1) {
+        strips.removeChild(strips.lastChild);
+      }
+      strips.style.margin = '0';
+      strips.style.justifyContent = 'flex-start';
+
+      if (onDone) {
+        stepTimer = setTimeout(onDone, 900);
+      }
+    }, splitTime);
+  }
+
+  function renderLego() {
+    if (op === 'mul') renderMulPieces();
+    else renderDivWhole();
+  }
+
+  function buildMul() {
+    a = randFactor();
+    b = randFactor();
+    correctAnswer = a * b;
+    op = 'mul';
+    return a + ' × ' + b + ' =';
+  }
+  function buildDiv() {
+    a = randFactor();
+    b = randFactor();
+    correctAnswer = a;
+    op = 'div';
+    return (a * b) + ' ÷ ' + b + ' =';
+  }
+  function pickOp() {
+    if (mulOn && divOn) return Math.random() < 0.5 ? 'mul' : 'div';
+    if (divOn) return 'div';
+    return 'mul';
+  }
+
+  function newTask() {
+    clearTimers();
+    locked = false;
+    hideMessage();
+
+    if (!mulOn && !divOn) {
+      mulOn = true;
+      setActiveModes();
+    }
+
+    var want = pickOp();
+    var expr = (want === 'mul') ? buildMul() : buildDiv();
+
+    exprEl.textContent = expr;
+    renderLego();
+
+    input.value = '';
+    input.classList.remove('correct', 'wrong');
+    input.disabled = false;
+    input.focus();
+  }
+
+  function evaluate() {
+    if (locked) return;
+    var raw = input.value;
+    if (raw.length === 0) return;
+
+    locked = true;
+    clearTimers();
+    var num = parseInt(raw, 10);
+
+    if (num === correctAnswer) {
+      input.classList.add('correct');
+      score++;
+      if (score > best) best = score;
+      updateStats();
+      showSuccess();
+
+      input.disabled = true;
+
+      function afterAnimation() {
+        advanceTimer = setTimeout(newTask, 800);
+      }
+
+      if (op === 'mul') {
+        renderMulMerge(afterAnimation);
+      } else {
+        renderDivAnswer(afterAnimation);
+      }
+    } else {
+      input.classList.add('wrong');
+      errors++;
+      updateStats();
+      showError('Правильный ответ: ' + correctAnswer);
+      input.disabled = true;
+      advanceTimer = setTimeout(newTask, 1600);
+    }
+  }
+
+  input.addEventListener('input', function () {
+    input.value = input.value.replace(/\D/g, '').slice(0, 2);
+    if (locked) return;
+    if (inputTimer) { clearTimeout(inputTimer); inputTimer = null; }
+
+    var val = input.value;
+    if (val.length === 0) return;
+
+    if (val.length === 1) {
+      if (correctAnswer < 10) {
+        inputTimer = setTimeout(function () {
+          inputTimer = null;
+          if (!locked && input.value.length === 1) evaluate();
+        }, 900);
+      }
+      return;
+    }
+    if (val.length === 2) {
+      inputTimer = setTimeout(function () {
+        inputTimer = null;
+        if (!locked && input.value.length === 2) evaluate();
+      }, 250);
+    }
+  });
+
+  input.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' || e.keyCode === 13) {
+      e.preventDefault();
+      if (inputTimer) { clearTimeout(inputTimer); inputTimer = null; }
+      evaluate();
+    }
+  });
+
+  var modeButtons = document.querySelectorAll('#modes button');
+  for (var i = 0; i < modeButtons.length; i++) {
+    modeButtons[i].addEventListener('click', function () {
+      var m = this.getAttribute('data-mode');
+      if (m === 'mul') mulOn = !mulOn;
+      else divOn = !divOn;
+
+      if (!mulOn && !divOn) {
+        if (m === 'mul') mulOn = true;
+        else divOn = true;
+      }
+
+      setActiveModes();
+      clearTimers();
+      locked = false;
+      input.disabled = false;
+      newTask();
+    });
+  }
+
+  document.getElementById('btn-reset').addEventListener('click', function () {
+    clearTimers();
+    score = 0; errors = 0;
+    updateStats();
+    newTask();
+  });
+
+  var resizeTimer = null;
+  window.addEventListener('resize', function () {
+    if (resizeTimer) clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(function () {
+      resizeTimer = null;
+      if (!locked) renderLego();
+    }, 150);
+  });
+
+  updateStats();
+  setActiveModes();
+  newTask();
+})();
+</script>
+</body>
+</html>
