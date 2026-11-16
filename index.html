@@ -60,6 +60,7 @@
   .prev-math {
     display: flex; align-items: center; gap: 8px;
     font-size: 22px; font-weight: bold; color: #141414;
+    font-family: 'Comic Sans MS', Arial, sans-serif;
   }
   .prev-math .num {
     background: #fff;
@@ -112,6 +113,36 @@
   .prev-memory span.open { background: #38bdf8; color: #0f172a; }
   .prev-memory span.done {
     background: linear-gradient(145deg, #5cb85c, #4B9F4A);
+    box-shadow: 0 2px 0 #2e6b2e;
+  }
+
+  /* --- Превью «Find a Letter» --- */
+  .prev-letters {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 4px;
+    width: 96px;
+    font-family: Verdana, Tahoma, Geneva, sans-serif;
+  }
+  .prev-letters span {
+    aspect-ratio: 1;
+    display: flex; align-items: center; justify-content: center;
+    background: #fafafa;
+    border: 2px solid #e8e8e8;
+    border-radius: 4px;
+    font-size: 13px; font-weight: 700;
+    color: #141414;
+  }
+  .prev-letters span.target {
+    background: #fff;
+    border-color: #FFD502;
+    box-shadow: 0 2px 0 #c9a800;
+    color: #141414;
+  }
+  .prev-letters span.hit {
+    background: linear-gradient(145deg, #5cb85c, #4B9F4A);
+    border-color: #2e6b2e;
+    color: #fff;
     box-shadow: 0 2px 0 #2e6b2e;
   }
 
@@ -188,13 +219,14 @@
      СПИСОК УПРАЖНЕНИЙ
      ------------------------------------------------------------
      file    — имя HTML-файла (обязательно)
-     preview — тип превью: "math" | "schulte" | "memory" (необязательно)
+     preview — тип превью: "math" | "schulte" | "memory" | "letters"
      Название берётся из <h1> упражнения.
      ============================================================ */
   const EXERCISES = [
     { file: "умножение деление.html", preview: "math" },
     { file: "шульте.html",            preview: "schulte" },
     { file: "мемори.html",            preview: "memory" },
+    { file: "find-a-letter.html",     preview: "letters" },
   ];
 
   (async function () {
@@ -243,7 +275,7 @@
           '</div>';
       } else if (type === 'schulte') {
         var cells = ['1','2','3','4','5','6','7','8','9'];
-        var hitIndex = 4; // по центру — зелёная
+        var hitIndex = 4;
         var html = '<div class="prev-schulte">';
         for (var i = 0; i < cells.length; i++) {
           html += '<span' + (i === hitIndex ? ' class="hit"' : '') + '>' + cells[i] + '</span>';
@@ -259,6 +291,26 @@
           else if (i === 1 || i === 4) cls = 'done';
           html += '<span' + (cls ? ' class="' + cls + '"' : '') + '>' +
                   (cls ? cards[i] : '') + '</span>';
+        }
+        html += '</div>';
+        wrap.innerHTML = html;
+      } else if (type === 'letters') {
+        // мини-сетка 3×3: одна целевая A (жёлтая рамка), одна уже найдена (зелёная)
+        var cells = [
+          { ch: 'B', cls: '' },
+          { ch: 'A', cls: 'target' },
+          { ch: 'C', cls: '' },
+          { ch: 'D', cls: '' },
+          { ch: 'A', cls: 'hit' },
+          { ch: 'E', cls: '' },
+          { ch: 'F', cls: '' },
+          { ch: 'G', cls: '' },
+          { ch: 'H', cls: '' },
+        ];
+        var html = '<div class="prev-letters">';
+        for (var i = 0; i < cells.length; i++) {
+          html += '<span' + (cells[i].cls ? ' class="' + cells[i].cls + '"' : '') + '>' +
+                  cells[i].ch + '</span>';
         }
         html += '</div>';
         wrap.innerHTML = html;
