@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Умножение и деление</title>
+<style>
+  body {
+    font-family: 'Comic Sans MS', Arial, sans-serif;
+    background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    padding: 15px;
+    box-sizing: border-box;
+  }
+  .card {
+    background: white;
+    border-radius: 24px;
+    padding: 25px 35px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    text-align: center;
+    max-width: 560px;
+    width: 100%;
+  }
+  h1 { color: #ff6b9d; margin: 0 0 12px; font-size: 28px; }
+  .modes {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+  }
+  .modes button {
+    font-family: inherit;
+    font-size: 14px;
+    padding: 8px 14px;
+    border: 2px solid #6bcBff;
+    border-radius: 12px;
+    background: white;
+    color: #2a7fb0;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .modes button:hover { background: #eaf6ff; }
+  .modes button.active {
+    background: #6bcBff;
+    color: white;
+    border-color: #6bcBff;
+  }
+  .task {
+    font-size: 52px;
+    font-weight: bold;
+    color: #333;
+    margin: 22px 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  input {
+    font-family: inherit;
+    font-size: 52px;
+    font-weight: bold;
+    width: 130px;
+    text-align: center;
+    border: 4px solid #6bcBff;
+    border-radius: 16px;
+    color: #333;
+    outline: none;
+    padding: 4px 0;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  input:focus { border-color: #ff6b9d; }
+  input.correct { border-color: #4cd964; background: #eaffea; }
+  input.wrong { border-color: #ff4d4d; background: #ffeaea; }
+  .message {
+    font-size: 26px;
+    height: 34px;
+    margin-top: 8px;
+    font-weight: bold;
+  }
+  .stats {
+    display: flex;
+    justify-content: space-around;
+    font-size: 17px;
+    color: #666;
+    margin-top: 12px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .best {
+    font-size: 15px;
+    color: #999;
+    margin-top: 8px;
+  }
+  .buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 14px;
+    flex-wrap: wrap;
+  }
+  .reset, .wipe {
+    font-family: inherit;
+    font-size: 15px;
+    padding: 10px 18px;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+  }
+  .reset { background: #999; }
+  .reset:hover { background: #777; }
+  .wipe { background: #ff8a8a; }
+  .wipe:hover { background: #e05c5c; }
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>🐻 Умножение и деление</h1>
+
+  <div class="modes" id="modes">
+    <button data-mode="mul" class="active">Умножение</button>
+    <button data-mode="div">Деление</button>
+    <button data-mode="mix">Смешанно</button>
+  </div>
+
+  <div class="task">
+    <span id="expr">3 × 4 =</span>
+    <input id="answer" type="text" inputmode="numeric" autocomplete="off" autofocus>
+  </div>
+  <div class="message" id="message"></div>
+
+  <div class="stats">
+    <span>✅ Верно: <b id="score">0</b></span>
+    <span>❌ Ошибок: <b id="errors">0</b></span>
+  </div>
+  <div class="best" id="best">🏆 Рекорд: 0</div>
+
+  <div class="buttons">
+    <button class="reset" onclick="resetCounters()">Заново</button>
+    <button class="wipe" onclick="wipeProgress()">Стереть прогресс</button>
+  </div>
+</div>
+
+<script>
+let score = 0, errors = 0, best = 0;
+let a, b, correctAnswer, locked = false;
+let mode = 'mul';
+const input = document.getElementById('answer');
+const STORAGE_KEY = 'mathTrainerMulDiv';
+
+function loadProgress() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+    score = saved.score || 0;
+    errors = saved.errors || 0;
+    best = saved.best || 0;
+    mode = saved.mode || 'mul';
+  } catch (e) {
+    score = 0; errors = 0; best = 0; mode = 'mul';
+  }
+  updateUI();
+  setActiveModeButton();
+}
+function saveProgress() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({ score, errors, best, mode }));
+}
+function updateUI() {
+  document.getElementById('score').textContent = score;
+  document.getElementById('errors').textContent = errors;
+  document.getElementById('best').textContent = '🏆 Рекорд: ' + best;
+}
+function setActiveModeButton() {
+  document.querySelectorAll('#modes button').forEach(b => {
+    b.classList.toggle('active', b.dataset.mode === mode);
+  });
+}
+
+function randomInt(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+function randFactor() { return randomInt(2, 9); }
+
+function genMul() {
+  a = randFactor();
+  b = randFactor();
+  correctAnswer = a * b;
+  return `${a} × ${b} =`;
+}
+function genDiv() {
+  a = randFactor();
+  b = randFactor();
+  correctAnswer = a;
+  return `${a * b} ÷ ${b} =`;
+}
+
+function newTask() {
+  locked = false;
+  let expr;
+  if (mode === 'mul') expr = genMul();
+  else if (mode === 'div') expr = genDiv();
+  else expr = Math.random() < 0.5 ? genMul() : genDiv();
+
+  document.getElementById('expr').textContent = expr;
+  document.getElementById('message').textContent = '';
+  input.value = '';
+  input.classList.remove('correct', 'wrong');
+  input.focus();
+}
+
+function evaluate(num) {
+  locked = true;
+  if (num === correctAnswer) {
+    input.classList.add('correct');
+    score++;
+    if (score > best) best = score;
+    updateUI();
+    saveProgress();
+    const msg = document.getElementById('message');
+    msg.textContent = '🎉 Молодец!';
+    msg.style.color = '#4cd964';
+    setTimeout(newTask, 700);
+  } else {
+    input.classList.add('wrong');
+    errors++;
+    updateUI();
+    saveProgress();
+    const msg = document.getElementById('message');
+    msg.textContent = `Неа, правильный ответ: ${correctAnswer}`;
+    msg.style.color = '#ff4d4d';
+    setTimeout(newTask, 1600);
+  }
+}
+
+let inputTimer = null;
+input.addEventListener('input', () => {
+  input.value = input.value.replace(/\D/g, '').slice(0, 2);
+  if (locked) return;
+
+  clearTimeout(inputTimer);
+  const val = input.value;
+  if (val.length === 0) return;
+
+  inputTimer = setTimeout(() => {
+    if (locked) return;
+    const cur = input.value;
+    if (cur.length === 0) return;
+
+    if (cur.length === 1) {
+      inputTimer = setTimeout(() => {
+        if (locked) return;
+        if (input.value.length === 1) {
+          evaluate(parseInt(input.value, 10));
+        }
+      }, 900);
+      return;
+    }
+    evaluate(parseInt(cur, 10));
+  }, 250);
+});
+
+document.querySelectorAll('#modes button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    mode = btn.dataset.mode;
+    setActiveModeButton();
+    saveProgress();
+    newTask();
+  });
+});
+
+function resetCounters() {
+  score = 0;
+  errors = 0;
+  updateUI();
+  saveProgress();
+  newTask();
+}
+function wipeProgress() {
+  if (!confirm('Стереть весь прогресс и рекорд?')) return;
+  score = 0; errors = 0; best = 0; mode = 'mul';
+  localStorage.removeItem(STORAGE_KEY);
+  updateUI();
+  setActiveModeButton();
+  newTask();
+}
+
+loadProgress();
+newTask();
+</script>
+</body>
+</html>
