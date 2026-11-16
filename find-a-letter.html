@@ -176,8 +176,9 @@
     <div class="picker-group" id="sizesGroup"></div>
     <span class="sep"></span>
     <div class="picker-group" id="levelsGroup">
-      <button class="level-btn active" data-level="easy">Простой</button>
+      <button class="level-btn" data-level="easy">Простой</button>
       <button class="level-btn" data-level="hard">Сложный</button>
+      <button class="level-btn active" data-level="super">Супер</button>
     </div>
     <span class="sep"></span>
     <div class="picker-group" id="soundGroup">
@@ -222,6 +223,56 @@
   const UPPER = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
   const LOWER = 'abcdefghijklmnopqrstuvwxyz'.split('');
 
+  /* ============================================================
+     ГРУППЫ «ПОХОЖИХ» БУКВ — для супер-сложного режима.
+     В каждой группе 4–5 строчных букв; заглавные добавляются
+     автоматически (через toUpperCase).
+     Ключ — строчная буква, значение — массив её «двойников».
+     ============================================================ */
+  const SIMILAR_GROUPS = {
+    // Зеркальные с палками
+    b: ['b', 'd', 'p', 'q'],
+    d: ['b', 'd', 'p', 'q'],
+    p: ['b', 'd', 'p', 'q'],
+    q: ['b', 'd', 'p', 'q', 'g'],
+
+    // Палочки с дугами
+    m: ['m', 'n', 'h', 'r'],
+    n: ['m', 'n', 'h', 'r', 'u'],
+    h: ['m', 'n', 'h', 'r'],
+    r: ['m', 'n', 'h', 'r'],
+
+    // Вертикальные с точкой/крючком/перекладиной
+    i: ['i', 'l', 'j', 't'],
+    l: ['i', 'l', 'j', 't'],
+    j: ['i', 'l', 'j', 't', 'g'],
+    t: ['i', 'l', 'j', 't', 'f'],
+
+    // Галочки
+    u: ['u', 'v', 'w', 'y', 'n'],
+    v: ['u', 'v', 'w', 'y', 'x'],
+    w: ['u', 'v', 'w', 'y'],
+    y: ['u', 'v', 'w', 'y', 'g'],
+
+    // Круглые
+    c: ['c', 'e', 'o', 'a', 's'],
+    e: ['c', 'e', 'o', 'a'],
+    o: ['c', 'e', 'o', 'a', 'u'],
+    a: ['c', 'e', 'o', 'a'],
+
+    // С верхней палкой / пересечением
+    f: ['f', 't', 'k', 'h'],
+    k: ['f', 't', 'k', 'h', 'x'],
+
+    // С хвостом вниз
+    g: ['g', 'q', 'y', 'j', 'p'],
+
+    // Зигзаги
+    s: ['s', 'z', 'c', 'x'],
+    z: ['s', 'z', 'x', 'c'],
+    x: ['x', 'k', 'v', 's'],
+  };
+
   const gridEl = document.getElementById('grid');
   const targetEl = document.getElementById('target');
   const foundEl = document.getElementById('found');
@@ -236,9 +287,10 @@
   const soundGroup = document.getElementById('soundGroup');
 
   let currentSize = SIZES[1];
-  let currentLevel = 'easy';
+  let currentLevel = 'super';
   let soundOn = true;
   let targetSymbol = 'A';
+  let targetLetter = 'A';
   let targetCount = 0;
   let foundCount = 0;
   let errorCount = 0;
@@ -296,9 +348,21 @@
     msgEl.classList.add('show');
   }
 
-  function getPool() {
+  function getSuperPool(letterLower) {
+    const base = SIMILAR_GROUPS[letterLower];
+    if (!base) return UPPER.concat(LOWER);
+    const set = [];
+    base.forEach((ch) => {
+      set.push(ch);
+      set.push(ch.toUpperCase());
+    });
+    return Array.from(new Set(set));
+  }
+
+  function getPool(targetLower) {
+    if (currentLevel === 'easy') return UPPER;
     if (currentLevel === 'hard') return UPPER.concat(LOWER);
-    return UPPER;
+    return getSuperPool(targetLower);
   }
 
   function setupSizeButtons() {
@@ -350,20 +414,40 @@
     timerEl.textContent = '00.00';
 
     const total = currentSize.n * currentSize.n;
-    const pool = getPool();
 
-    targetSymbol = pool[Math.floor(Math.random() * pool.length)];
+    if (currentLevel === 'easy') {
+      targetSymbol = UPPER[Math.floor(Math.random() * UPPER.length)];
+    } else if (currentLevel === 'hard') {
+      const all = UPPER.concat(LOWER);
+      targetSymbol = all[Math.floor(Math.random() * all.length)];
+    } else {
+      const lower = LOWER[Math.floor(Math.random() * LOWER.length)];
+      targetSymbol = Math.random() < 0.5 ? lower : lower.toUpperCase();
+    }
+    targetLetter = targetSymbol.toUpperCase();
+    const targetLower = targetSymbol.toLowerCase();
+
+    const pool = getPool(targetLower);
 
     let count = Math.round(total * (0.15 + Math.random() * 0.10));
     if (count < 3) count = 3;
     if (count > 8) count = 8;
     targetCount = count;
 
-    const others = pool.filter((c) => c !== targetSymbol);
+    const targetVariants = pool.filter((c) => c.toUpperCase() === targetLetter);
+    if (targetVariants.length === 0) targetVariants.push(targetSymbol);
+    const others = pool.filter((c) => c.toUpperCase() !== targetLetter);
+
     const cells = [];
-    for (let i = 0; i < count; i++) cells.push(targetSymbol);
+    for (let i = 0; i < count; i++) {
+      cells.push(targetVariants[Math.floor(Math.random() * targetVariants.length)]);
+    }
     while (cells.length < total) {
-      cells.push(others[Math.floor(Math.random() * others.length)]);
+      if (others.length === 0) {
+        cells.push(targetVariants[Math.floor(Math.random() * targetVariants.length)]);
+      } else {
+        cells.push(others[Math.floor(Math.random() * others.length)]);
+      }
     }
     shuffle(cells);
 
@@ -399,7 +483,7 @@
 
     speak(sym);
 
-    if (sym === targetSymbol) {
+    if (sym.toUpperCase() === targetLetter) {
       cell.classList.add('found');
       foundCount++;
       foundEl.textContent = foundCount + '/' + targetCount;
