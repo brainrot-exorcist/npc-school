@@ -9,38 +9,145 @@
   body {
     font-family: 'Comic Sans MS', Arial, sans-serif;
     background: #f6f6f6;
-    display: flex; justify-content: center; align-items: center;
-    min-height: 100vh; margin: 0; padding: 15px; color: #141414;
+    display: flex; justify-content: center; align-items: flex-start;
+    min-height: 100vh; margin: 0; padding: 20px 15px; color: #141414;
   }
   .card {
     background: #fff; border-radius: 12px; padding: 25px 30px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.06);
     border: 1px solid #e8e8e8; text-align: center;
-    max-width: 600px; width: 100%;
+    max-width: 720px; width: 100%;
   }
-  h1 { margin: 0 0 18px; font-size: 24px; font-weight: bold; }
+  h1 { margin: 0 0 20px; font-size: 24px; font-weight: bold; }
 
-  .list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+  /* ===== Сетка плашек ===== */
+  .list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 14px;
+    margin-bottom: 16px;
+  }
+
   .item {
-    display: flex; align-items: center; justify-content: space-between;
-    gap: 12px; padding: 14px 16px;
-    background: #f0f0f0; border-radius: 0;
+    display: flex; flex-direction: column;
+    background: #fafafa;
+    border-radius: 10px;
+    border: 2px solid #e8e8e8;
     text-decoration: none; color: #141414;
-    font-size: 15px; font-weight: bold;
-    transition: background 0.15s, transform 0.1s;
-    border: none; cursor: pointer; font-family: inherit;
+    overflow: hidden;
+    transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s;
+    cursor: pointer;
+  }
+  .item:hover {
+    transform: translateY(-3px);
+    border-color: #FFD502;
+    box-shadow: 0 6px 0 #c9a800, 0 10px 14px rgba(201,168,0,0.18);
+  }
+  .item:active { transform: translateY(-1px); box-shadow: 0 3px 0 #c9a800; }
+
+  /* ===== Превью ===== */
+  .preview {
+    height: 120px;
+    display: flex; align-items: center; justify-content: center;
+    padding: 12px;
+    position: relative;
+    overflow: hidden;
+    background: #fff;
+    border-bottom: 2px solid #e8e8e8;
+  }
+
+  /* --- Превью «математика» --- */
+  .prev-math {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 22px; font-weight: bold; color: #141414;
+  }
+  .prev-math .num {
+    background: #fff;
+    border: 3px solid #FFD502;
+    border-radius: 6px;
+    padding: 2px 10px;
+    box-shadow: 0 2px 0 #c9a800;
+  }
+  .prev-math .op { color: #757575; }
+  .prev-math .eq { color: #4caf50; }
+
+  /* --- Превью «шульте» --- */
+  .prev-schulte {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 4px;
+    width: 88px;
+  }
+  .prev-schulte span {
+    aspect-ratio: 1;
+    display: flex; align-items: center; justify-content: center;
+    background: #fff;
+    border: 2px solid #e8e8e8;
+    border-radius: 4px;
+    font-size: 13px; font-weight: bold;
+    color: #141414;
+  }
+  .prev-schulte span.hit {
+    background: linear-gradient(145deg, #5cb85c, #4B9F4A);
+    border-color: #2e6b2e;
+    color: #fff;
+    box-shadow: 0 2px 0 #2e6b2e;
+  }
+
+  /* --- Превью «мемори» --- */
+  .prev-memory {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 4px;
+    width: 104px;
+  }
+  .prev-memory span {
+    aspect-ratio: 1;
+    display: flex; align-items: center; justify-content: center;
+    background: #334155;
+    border-radius: 4px;
+    font-size: 14px;
+    color: #e2e8f0;
+  }
+  .prev-memory span.open { background: #38bdf8; color: #0f172a; }
+  .prev-memory span.done {
+    background: linear-gradient(145deg, #5cb85c, #4B9F4A);
+    box-shadow: 0 2px 0 #2e6b2e;
+  }
+
+  /* --- Превью по умолчанию --- */
+  .prev-default {
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+    color: #c9a800;
+  }
+  .prev-default .star {
+    font-size: 38px;
+    line-height: 1;
+    text-shadow: 0 2px 0 #c9a800;
+  }
+  .prev-default .label { font-size: 12px; color: #999; font-weight: bold; }
+
+  /* ===== Название + стрелка ===== */
+  .caption {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 10px;
+    padding: 12px 14px;
+    background: #f0f0f0;
+    font-size: 14px; font-weight: bold;
     text-align: left;
   }
-  .item:hover { background: #e6e6e6; }
-  .item:active { transform: translateY(1px); }
-  .item .arrow {
+  .caption .name { flex: 1 1 auto; line-height: 1.25; }
+  .caption .arrow {
     flex: 0 0 auto;
-    width: 22px; height: 22px; border-radius: 50%;
+    width: 24px; height: 24px; border-radius: 50%;
     background: #FFD502; color: #141414;
     display: inline-flex; align-items: center; justify-content: center;
     font-size: 13px; box-shadow: 0 2px 0 #c9a800;
+    transition: transform 0.15s;
   }
+  .item:hover .arrow { transform: translateX(2px); }
 
+  /* ===== Статус ===== */
   .status {
     font-size: 14px; color: #757575;
     display: flex; align-items: center; justify-content: center;
@@ -57,11 +164,15 @@
     padding: 20px; color: #757575; font-size: 14px;
     background: #fbfbfb; border-radius: 8px;
     border: 1px dashed #dcdcdc;
+    grid-column: 1 / -1;
   }
 
   @media (max-width: 420px) {
     h1 { font-size: 20px; }
-    .item { font-size: 14px; padding: 12px 14px; }
+    .card { padding: 20px 16px; }
+    .list { grid-template-columns: 1fr 1fr; gap: 10px; }
+    .preview { height: 100px; }
+    .caption { font-size: 12px; padding: 10px; }
   }
 </style>
 </head>
@@ -76,15 +187,14 @@
   /* ============================================================
      СПИСОК УПРАЖНЕНИЙ
      ------------------------------------------------------------
-     Чтобы добавить упражнение, допишите строчку вида:
-         { file: "имя-файла.html" },
-     перед закрывающей скобкой ];
-     Название писать не нужно — оно берётся из <h1> упражнения.
+     file    — имя HTML-файла (обязательно)
+     preview — тип превью: "math" | "schulte" | "memory" (необязательно)
+     Название берётся из <h1> упражнения.
      ============================================================ */
   const EXERCISES = [
-    { file: "умножение деление.html" },
-    { file: "шульте.html" },
-    { file: "мемори.html" },
+    { file: "умножение деление.html", preview: "math" },
+    { file: "шульте.html",            preview: "schulte" },
+    { file: "мемори.html",            preview: "memory" },
   ];
 
   (async function () {
@@ -118,6 +228,50 @@
       return file.replace(/\.html?$/i, '');
     }
 
+    function buildPreview(type) {
+      var wrap = document.createElement('div');
+      wrap.className = 'preview';
+
+      if (type === 'math') {
+        wrap.innerHTML =
+          '<div class="prev-math">' +
+            '<span class="num">3</span>' +
+            '<span class="op">×</span>' +
+            '<span class="num">4</span>' +
+            '<span class="op">=</span>' +
+            '<span class="eq">?</span>' +
+          '</div>';
+      } else if (type === 'schulte') {
+        var cells = ['1','2','3','4','5','6','7','8','9'];
+        var hitIndex = 4; // по центру — зелёная
+        var html = '<div class="prev-schulte">';
+        for (var i = 0; i < cells.length; i++) {
+          html += '<span' + (i === hitIndex ? ' class="hit"' : '') + '>' + cells[i] + '</span>';
+        }
+        html += '</div>';
+        wrap.innerHTML = html;
+      } else if (type === 'memory') {
+        var cards = ['🐶','🐱','🐭','🐹','🐶','🐱','🐭','🐹'];
+        var html = '<div class="prev-memory">';
+        for (var i = 0; i < cards.length; i++) {
+          var cls = '';
+          if (i === 0) cls = 'open';
+          else if (i === 1 || i === 4) cls = 'done';
+          html += '<span' + (cls ? ' class="' + cls + '"' : '') + '>' +
+                  (cls ? cards[i] : '') + '</span>';
+        }
+        html += '</div>';
+        wrap.innerHTML = html;
+      } else {
+        wrap.innerHTML =
+          '<div class="prev-default">' +
+            '<span class="star">★</span>' +
+            '<span class="label">упражнение</span>' +
+          '</div>';
+      }
+      return wrap;
+    }
+
     if (!EXERCISES.length) {
       setStatus('Список упражнений пуст', false);
       listEl.innerHTML = '<div class="empty">Пока нет упражнений.</div>';
@@ -125,20 +279,31 @@
     }
 
     var entries = await Promise.all(EXERCISES.map(async function (ex) {
-      return { file: ex.file, name: await getName(ex.file) };
+      return { file: ex.file, preview: ex.preview || 'default', name: await getName(ex.file) };
     }));
 
     entries.forEach(function (e) {
       var a = document.createElement('a');
       a.className = 'item';
       a.href = encodeURI(e.file);
+
+      a.appendChild(buildPreview(e.preview));
+
+      var caption = document.createElement('div');
+      caption.className = 'caption';
+
       var nameSpan = document.createElement('span');
+      nameSpan.className = 'name';
       nameSpan.textContent = e.name;
+
       var arrow = document.createElement('span');
       arrow.className = 'arrow';
       arrow.textContent = '→';
-      a.appendChild(nameSpan);
-      a.appendChild(arrow);
+
+      caption.appendChild(nameSpan);
+      caption.appendChild(arrow);
+      a.appendChild(caption);
+
       listEl.appendChild(a);
     });
 
