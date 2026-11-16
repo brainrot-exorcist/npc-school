@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Find a Letter</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'Comic Sans MS', Arial, sans-serif;
+    background: #f6f6f6;
+    display: flex; justify-content: center; align-items: flex-start;
+    min-height: 100vh; margin: 0; padding: 12px; color: #141414;
+  }
+  .card {
+    background: #fff; border-radius: 12px; padding: 18px 22px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    border: 1px solid #e8e8e8; text-align: center;
+    max-width: 600px; width: 100%;
+  }
+  h1 { margin: 0 0 10px; font-size: 22px; font-weight: bold; }
+
+  .pickers {
+    display: flex; flex-wrap: wrap;
+    justify-content: center; align-items: center;
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+  .sep {
+    width: 1px; height: 22px;
+    background: #e8e8e8;
+    margin: 0 4px;
+    flex: 0 0 auto;
+  }
+  .size-btn, .sound-btn, .level-btn {
+    font-family: inherit; font-size: 12px; font-weight: bold;
+    padding: 6px 12px; border: none; border-radius: 0;
+    background: #f0f0f0; color: #757575; cursor: pointer;
+    transition: all 0.15s;
+  }
+  .size-btn:hover, .sound-btn:hover, .level-btn:hover { background: #e6e6e6; }
+  .size-btn.active, .sound-btn.active, .level-btn.active {
+    background: #FFD502; color: #141414;
+    box-shadow: 0 2px 0 #c9a800;
+  }
+
+  .task {
+    font-size: 18px; font-weight: bold; color: #141414;
+    display: flex; justify-content: center; align-items: center;
+    gap: 10px; margin: 4px 0 8px; flex-wrap: wrap;
+  }
+  .task .target {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 40px; height: 40px; padding: 0 10px;
+    background: #FFD502; color: #141414;
+    border-radius: 8px;
+    box-shadow: 0 3px 0 #c9a800;
+    font-size: 24px;
+    font-family: Verdana, Tahoma, Geneva, sans-serif;
+  }
+
+  .stats {
+    font-size: 13px; color: #757575;
+    display: flex; justify-content: space-around; align-items: center;
+    margin: 2px 0 8px; gap: 8px; flex-wrap: wrap;
+  }
+  .stats .stat { display: inline-flex; align-items: center; gap: 5px; }
+  .stats b { color: #141414; }
+
+  .msg-wrap {
+    min-height: 40px; display: flex; justify-content: center;
+    align-items: center; margin-top: 4px;
+  }
+  .msg-note {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 14px; font-weight: bold;
+    padding: 7px 12px;
+    border-radius: 4px;
+    background: #f0f7ec;
+    border-left: 4px solid #4caf50;
+    color: #2e5a2e;
+    width: 100%;
+    max-width: 340px;
+    opacity: 0;
+    transform: translateY(3px);
+    transition: opacity 0.2s, transform 0.2s;
+  }
+  .msg-note.show { opacity: 1; transform: translateY(0); }
+  .msg-note.error {
+    background: #fbf0f0;
+    border-left-color: #e07a7a;
+    color: #8a2b2b;
+  }
+  .ico {
+    flex: 0 0 auto;
+    width: 20px; height: 20px; border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: bold; line-height: 1;
+    background: #4caf50; color: #fff;
+  }
+  .ico.error { background: #e07a7a; }
+
+  .grid {
+    display: grid; gap: 6px;
+    width: 100%; max-width: 460px;
+    margin: 0 auto;
+  }
+  .cell {
+    aspect-ratio: 1 / 1;
+    display: flex; align-items: center; justify-content: center;
+    background: #fafafa;
+    border: 2px solid #e8e8e8;
+    border-radius: 8px;
+    font-family: Verdana, Tahoma, Geneva, sans-serif;
+    font-size: clamp(16px, 4.5vw, 26px);
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    cursor: pointer; user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    transition: background 0.15s, border-color 0.15s, transform 0.1s;
+    color: #141414;
+  }
+  .cell:hover { border-color: #FFD502; }
+  .cell:active { transform: translateY(1px); }
+
+  .cell.found {
+    background: linear-gradient(145deg, #5cb85c, #4B9F4A);
+    border-color: #2e6b2e;
+    color: #fff;
+    cursor: default;
+    box-shadow:
+      0 3px 0 #2e6b2e,
+      0 4px 6px rgba(46,107,46,0.25),
+      inset 0 2px 0 rgba(255,255,255,0.35);
+    text-shadow: 0 1px 0 rgba(0,0,0,0.25);
+  }
+  .cell.found:hover { border-color: #2e6b2e; }
+
+  .cell.wrong {
+    background: linear-gradient(145deg, #e53935, #C4281C);
+    border-color: #8a1a12;
+    color: #fff;
+    box-shadow:
+      0 3px 0 #8a1a12,
+      0 0 0 3px rgba(196,40,28,0.25),
+      inset 0 2px 0 rgba(255,255,255,0.3);
+    text-shadow: 0 1px 0 rgba(0,0,0,0.25);
+  }
+
+  .buttons { display: flex; gap: 10px; justify-content: center; margin-top: 10px; flex-wrap: wrap; }
+  .reset {
+    font-family: inherit; font-size: 13px; font-weight: bold;
+    padding: 9px 22px; border: none; border-radius: 0;
+    cursor: pointer; transition: all 0.1s;
+    background: #FFD502; color: #141414; box-shadow: 0 3px 0 #c9a800;
+  }
+  .reset:hover { background: #ffe14d; }
+  .reset:active { transform: translateY(2px); box-shadow: 0 1px 0 #c9a800; }
+
+  @media (max-width: 420px) {
+    h1 { font-size: 18px; margin-bottom: 8px; }
+    .card { padding: 14px 12px; }
+    .size-btn, .sound-btn, .level-btn { font-size: 11px; padding: 5px 9px; }
+    .sep { height: 18px; margin: 0 2px; }
+    .task { font-size: 15px; }
+    .task .target { min-width: 34px; height: 34px; font-size: 20px; }
+    .grid { gap: 4px; }
+  }
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>Find a Letter</h1>
+
+  <div class="pickers">
+    <div class="picker-group" id="sizesGroup"></div>
+    <span class="sep"></span>
+    <div class="picker-group" id="levelsGroup">
+      <button class="level-btn active" data-level="easy">Простой</button>
+      <button class="level-btn" data-level="hard">Сложный</button>
+    </div>
+    <span class="sep"></span>
+    <div class="picker-group" id="soundGroup">
+      <button class="sound-btn" data-sound="off">🔇</button>
+      <button class="sound-btn active" data-sound="on">🔊</button>
+    </div>
+  </div>
+
+  <div class="task">
+    <span>Найди все:</span>
+    <span class="target" id="target">A</span>
+  </div>
+
+  <div class="stats">
+    <span class="stat">Найдено: <b id="found">0/0</b></span>
+    <span class="stat">Ошибок: <b id="errors">0</b></span>
+    <span class="stat">Время: <b id="timer">00.00</b></span>
+  </div>
+
+  <div class="msg-wrap">
+    <div class="msg-note" id="message">
+      <span class="ico" id="msgIco">✓</span>
+      <span id="msgText">Готово!</span>
+    </div>
+  </div>
+
+  <div class="grid" id="grid"></div>
+
+  <div class="buttons">
+    <button class="reset" id="start">Новая игра</button>
+  </div>
+</div>
+
+<script>
+  const SIZES = [
+    { n: 5, label: '5×5' },
+    { n: 6, label: '6×6' },
+    { n: 7, label: '7×7' },
+    { n: 8, label: '8×8' },
+  ];
+
+  const UPPER = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+  const LOWER = 'abcdefghijklmnopqrstuvwxyz'.split('');
+
+  const gridEl = document.getElementById('grid');
+  const targetEl = document.getElementById('target');
+  const foundEl = document.getElementById('found');
+  const errorsEl = document.getElementById('errors');
+  const timerEl = document.getElementById('timer');
+  const msgEl = document.getElementById('message');
+  const msgIco = document.getElementById('msgIco');
+  const msgText = document.getElementById('msgText');
+  const startBtn = document.getElementById('start');
+  const sizesGroup = document.getElementById('sizesGroup');
+  const levelsGroup = document.getElementById('levelsGroup');
+  const soundGroup = document.getElementById('soundGroup');
+
+  let currentSize = SIZES[1];
+  let currentLevel = 'easy';
+  let soundOn = true;
+  let targetSymbol = 'A';
+  let targetCount = 0;
+  let foundCount = 0;
+  let errorCount = 0;
+  let solved = false;
+  let startTime = null;
+  let timerId = null;
+
+  let enVoice = null;
+  function pickVoice() {
+    if (!('speechSynthesis' in window)) return;
+    const voices = window.speechSynthesis.getVoices();
+    enVoice = voices.find(v => v.lang && v.lang.toLowerCase().startsWith('en')) || null;
+  }
+  if ('speechSynthesis' in window) {
+    pickVoice();
+    window.speechSynthesis.onvoiceschanged = pickVoice;
+  }
+
+  function speak(text) {
+    if (!soundOn) return;
+    if (!('speechSynthesis' in window)) return;
+    try {
+      window.speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = 'en-US';
+      u.rate = 0.9;
+      u.pitch = 1.0;
+      if (enVoice) u.voice = enVoice;
+      window.speechSynthesis.speak(u);
+    } catch (e) { /* тихо */ }
+  }
+
+  function shuffle(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
+  function formatTime(ms) {
+    let s = (ms / 1000).toFixed(2);
+    while (s.length < 5) s = '0' + s;
+    return s;
+  }
+
+  function hideMessage() {
+    msgEl.classList.remove('show', 'error');
+  }
+  function showSuccess(text) {
+    msgEl.classList.remove('error');
+    msgIco.textContent = '✓';
+    msgIco.classList.remove('error');
+    msgText.textContent = text;
+    msgEl.classList.add('show');
+  }
+
+  function getPool() {
+    if (currentLevel === 'hard') return UPPER.concat(LOWER);
+    return UPPER;
+  }
+
+  function setupSizeButtons() {
+    sizesGroup.innerHTML = '';
+    SIZES.forEach((s) => {
+      const btn = document.createElement('button');
+      btn.className = 'size-btn' + (s.n === currentSize.n ? ' active' : '');
+      btn.textContent = s.label;
+      btn.addEventListener('click', () => {
+        currentSize = s;
+        setupSizeButtons();
+        newGame();
+      });
+      sizesGroup.appendChild(btn);
+    });
+  }
+
+  function setupLevelButtons() {
+    const btns = levelsGroup.querySelectorAll('.level-btn');
+    btns.forEach((b) => {
+      b.className = 'level-btn' + (b.dataset.level === currentLevel ? ' active' : '');
+      b.onclick = () => {
+        currentLevel = b.dataset.level;
+        setupLevelButtons();
+        newGame();
+      };
+    });
+  }
+
+  function setupSoundButtons() {
+    const btns = soundGroup.querySelectorAll('.sound-btn');
+    btns.forEach((b) => {
+      const isOn = b.dataset.sound === 'on';
+      b.className = 'sound-btn' + (isOn === soundOn ? ' active' : '');
+      b.onclick = () => {
+        soundOn = isOn;
+        setupSoundButtons();
+      };
+    });
+  }
+
+  function newGame() {
+    if (timerId) { clearInterval(timerId); timerId = null; }
+    startTime = null;
+    solved = false;
+    foundCount = 0;
+    errorCount = 0;
+    hideMessage();
+    timerEl.textContent = '00.00';
+
+    const total = currentSize.n * currentSize.n;
+    const pool = getPool();
+
+    targetSymbol = pool[Math.floor(Math.random() * pool.length)];
+
+    let count = Math.round(total * (0.15 + Math.random() * 0.10));
+    if (count < 3) count = 3;
+    if (count > 8) count = 8;
+    targetCount = count;
+
+    const others = pool.filter((c) => c !== targetSymbol);
+    const cells = [];
+    for (let i = 0; i < count; i++) cells.push(targetSymbol);
+    while (cells.length < total) {
+      cells.push(others[Math.floor(Math.random() * others.length)]);
+    }
+    shuffle(cells);
+
+    targetEl.textContent = targetSymbol;
+    foundEl.textContent = '0/' + targetCount;
+    errorsEl.textContent = '0';
+
+    gridEl.style.gridTemplateColumns = 'repeat(' + currentSize.n + ', 1fr)';
+    gridEl.innerHTML = '';
+
+    cells.forEach((sym) => {
+      const cell = document.createElement('div');
+      cell.className = 'cell';
+      cell.textContent = sym;
+      cell.dataset.symbol = sym;
+      cell.addEventListener('click', () => onCellClick(cell));
+      gridEl.appendChild(cell);
+    });
+  }
+
+  function onCellClick(cell) {
+    if (solved) return;
+    if (cell.classList.contains('found')) return;
+
+    if (!startTime) {
+      startTime = Date.now();
+      timerId = setInterval(() => {
+        if (!solved) timerEl.textContent = formatTime(Date.now() - startTime);
+      }, 50);
+    }
+
+    const sym = cell.dataset.symbol;
+
+    speak(sym);
+
+    if (sym === targetSymbol) {
+      cell.classList.add('found');
+      foundCount++;
+      foundEl.textContent = foundCount + '/' + targetCount;
+
+      if (foundCount === targetCount) {
+        solved = true;
+        clearInterval(timerId);
+        const elapsed = Date.now() - startTime;
+        timerEl.textContent = formatTime(elapsed);
+        showSuccess('Все найдены за ' + formatTime(elapsed) + ' с! Ошибок: ' + errorCount);
+        setTimeout(() => speak('Well done'), 400);
+      }
+    } else {
+      cell.classList.add('wrong');
+      errorCount++;
+      errorsEl.textContent = errorCount;
+      setTimeout(() => {
+        cell.classList.remove('wrong');
+      }, 350);
+    }
+  }
+
+  startBtn.addEventListener('click', newGame);
+
+  setupSizeButtons();
+  setupLevelButtons();
+  setupSoundButtons();
+  newGame();
+</script>
+</body>
+</html>
