@@ -25,7 +25,6 @@
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     gap: 14px;
-    margin-bottom: 16px;
   }
 
   .item {
@@ -146,6 +145,37 @@
     box-shadow: 0 2px 0 #2e6b2e;
   }
 
+  /* --- Превью «Легион» --- */
+  .prev-legion {
+    width: 140px;
+    padding: 10px 12px;
+    background: #1a1a1a;
+    border: 2px solid #c5a059;
+    border-radius: 6px;
+    box-shadow: 0 0 12px rgba(197,160,89,0.25);
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .prev-legion .lg-title {
+    font-size: 9px; font-weight: bold;
+    color: #c5a059; text-transform: uppercase;
+    letter-spacing: 1px; text-align: center;
+    text-shadow: 0 0 6px rgba(197,160,89,0.5);
+  }
+  .prev-legion .lg-bar {
+    height: 4px; background: #333; border-radius: 2px; overflow: hidden;
+  }
+  .prev-legion .lg-bar div {
+    height: 100%; width: 60%; background: #c5a059;
+  }
+  .prev-legion .lg-opt {
+    font-size: 8px; color: #d4d4d4;
+    border: 1px solid #444; border-radius: 3px;
+    padding: 3px 5px; text-align: left;
+  }
+  .prev-legion .lg-opt.hot {
+    background: #8b0000; border-color: #b22222; color: #fff;
+  }
+
   /* --- Превью по умолчанию --- */
   .prev-default {
     display: flex; flex-direction: column; align-items: center; gap: 6px;
@@ -178,19 +208,6 @@
   }
   .item:hover .arrow { transform: translateX(2px); }
 
-  /* ===== Статус ===== */
-  .status {
-    font-size: 14px; color: #757575;
-    display: flex; align-items: center; justify-content: center;
-    gap: 8px; min-height: 24px; margin-top: 8px;
-  }
-  .status .ico {
-    width: 18px; height: 18px; border-radius: 50%;
-    display: inline-flex; align-items: center; justify-content: center;
-    font-size: 12px; font-weight: bold; background: #4caf50; color: #fff;
-  }
-  .status .ico.error { background: #e07a7a; }
-
   .empty {
     padding: 20px; color: #757575; font-size: 14px;
     background: #fbfbfb; border-radius: 8px;
@@ -211,40 +228,28 @@
 <div class="card">
   <h1>Упражнения</h1>
   <div class="list" id="list"></div>
-  <div class="status" id="status"></div>
 </div>
 
 <script>
   /* ============================================================
-     СПИСОК УПРАЖНЕНИЙ
+     СПИСОК
      ------------------------------------------------------------
      file    — имя HTML-файла (обязательно, буква в букву)
-     preview — тип превью: "math" | "schulte" | "memory" | "letters"
-     Название берётся из <h1> упражнения.
+     preview — тип превью: "math" | "schulte" | "memory" | "letters" | "legion"
+     Название берётся из <h1> файла.
      ============================================================ */
   const EXERCISES = [
     { file: "умножение деление.html", preview: "math" },
     { file: "шульте.html",            preview: "schulte" },
     { file: "мемори.html",            preview: "memory" },
     { file: "find-a-letter.html",     preview: "letters" },
+    { file: "40k_legion.html",        preview: "legion" },
   ];
 
   (async function () {
     'use strict';
 
     var listEl = document.getElementById('list');
-    var statusEl = document.getElementById('status');
-
-    function setStatus(text, isError) {
-      statusEl.innerHTML = '';
-      var ico = document.createElement('span');
-      ico.className = 'ico' + (isError ? ' error' : '');
-      ico.textContent = isError ? '×' : '✓';
-      var span = document.createElement('span');
-      span.textContent = text;
-      statusEl.appendChild(ico);
-      statusEl.appendChild(span);
-    }
 
     async function getName(file) {
       try {
@@ -295,7 +300,6 @@
         html += '</div>';
         wrap.innerHTML = html;
       } else if (type === 'letters') {
-        // мини-сетка 3×3: одна целевая A (жёлтая рамка), одна уже найдена (зелёная)
         var cells = [
           { ch: 'B', cls: '' },
           { ch: 'A', cls: 'target' },
@@ -314,6 +318,14 @@
         }
         html += '</div>';
         wrap.innerHTML = html;
+      } else if (type === 'legion') {
+        wrap.innerHTML =
+          '<div class="prev-legion">' +
+            '<div class="lg-title">Легион?</div>' +
+            '<div class="lg-bar"><div></div></div>' +
+            '<div class="lg-opt hot">Штурм и ярость</div>' +
+            '<div class="lg-opt">Честь и братство</div>' +
+          '</div>';
       } else {
         wrap.innerHTML =
           '<div class="prev-default">' +
@@ -325,7 +337,6 @@
     }
 
     if (!EXERCISES.length) {
-      setStatus('Список упражнений пуст', false);
       listEl.innerHTML = '<div class="empty">Пока нет упражнений.</div>';
       return;
     }
@@ -358,8 +369,6 @@
 
       listEl.appendChild(a);
     });
-
-    setStatus('Упражнений: ' + entries.length, false);
   })();
 </script>
 </body>
