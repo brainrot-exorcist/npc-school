@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Какой Легион Космодесанта тебе подходит?</title>
+    <style>
+        :root {
+            --bg-color: #1a1a1a;
+            --text-color: #d4d4d4;
+            --accent-color: #8b0000;
+            --accent-hover: #b22222;
+            --gold: #c5a059;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+            background-image: radial-gradient(circle at center, #2a2a2a 0%, #111 100%);
+        }
+
+        .container {
+            background-color: rgba(20, 20, 20, 0.9);
+            border: 2px solid var(--gold);
+            border-radius: 8px;
+            padding: 30px;
+            max-width: 600px;
+            width: 100%;
+            box-shadow: 0 0 20px rgba(197, 160, 89, 0.2);
+            text-align: center;
+        }
+
+        h1 {
+            color: var(--gold);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-size: 1.8rem;
+            margin-bottom: 30px;
+            text-shadow: 0 0 10px rgba(197, 160, 89, 0.5);
+        }
+
+        .question-text {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            min-height: 50px;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .option-btn {
+            background-color: transparent;
+            color: var(--text-color);
+            border: 1px solid #444;
+            padding: 15px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: left;
+            border-radius: 4px;
+        }
+
+        .option-btn:hover {
+            background-color: var(--accent-color);
+            border-color: var(--accent-hover);
+            color: #fff;
+            transform: translateX(5px);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 5px;
+            background-color: #333;
+            margin-bottom: 20px;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .progress {
+            height: 100%;
+            background-color: var(--gold);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .result-title {
+            color: var(--gold);
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .result-desc {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 30px;
+            text-align: left;
+        }
+
+        .restart-btn {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 1rem;
+            cursor: pointer;
+            border-radius: 4px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: background 0.3s;
+        }
+
+        .restart-btn:hover {
+            background-color: var(--accent-hover);
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Какой Легион Космодесанта тебе подходит?</h1>
+    
+    <div class="progress-bar">
+        <div class="progress" id="progress"></div>
+    </div>
+
+    <div id="quiz-section">
+        <div class="question-text" id="question">Загрузка...</div>
+        <div class="options" id="options"></div>
+    </div>
+
+    <div id="result-section" class="hidden">
+        <div class="result-title" id="result-name"></div>
+        <div class="result-desc" id="result-desc"></div>
+        <button class="restart-btn" onclick="restartQuiz()">Пройти заново</button>
+    </div>
+</div>
+
+<script>
+    // Данные теста
+    const questions = [
+        {
+            question: "Какая тактика ведения боя вам ближе?",
+            options: [
+                { text: "Стремительный штурм и ближний бой", legion: "blood_angels" },
+                { text: "Оборона и тяжелая огневая поддержка", legion: "imperial_fists" },
+                { text: "Скрытность и диверсии", legion: "raven_guard" },
+                { text: "Психологическая атака и устрашение", legion: "night_lords" }
+            ]
+        },
+        {
+            question: "Что для вас важнее всего?",
+            options: [
+                { text: "Честь и братство", legion: "ultramarines" },
+                { text: "Знание и логика", legion: "thousand_sons" },
+                { text: "Свобода и независимость", legion: "white_scars" },
+                { text: "Выживание любой ценой", legion: "iron_warriors" }
+            ]
+        },
+        {
+            question: "Как вы относитесь к Императору?",
+            options: [
+                { text: "Он — наш отец и повелитель", legion: "ultramarines" },
+                { text: "Его методы спорны, но цель оправдывает средства", legion: "alpha_legion" },
+                { text: "Он предал нас, мы служим Хаосу", legion: "black_legion" },
+                { text: "Он был слаб, мы сильнее", legion: "iron_warriors" }
+            ]
+        },
+        {
+            question: "Ваш стиль общения с врагом:",
+            options: [
+                { text: "Прямой вызов на бой", legion: "space_wolves" },
+                { text: "Молчаливое истребление", legion: "raven_guard" },
+                { text: "Пропаганда и подрыв изнутри", legion: "alpha_legion" },
+                { text: "Ужас и террор", legion: "night_lords" }
+            ]
+        },
+        {
+            question: "Какая сверхспособность вам ближе?",
+            options: [
+                { text: "Невероятная скорость и ярость", legion: "blood_angels" },
+                { text: "Устойчивость к боли и выносливость", legion: "death_guard" },
+                { text: "Психические силы", legion: "thousand_sons" },
+                { text: "Адаптация и хитрость", legion: "alpha_legion" }
+            ]
+        }
+    ];
+
+    // Описание легионов
+    const legions = {
+        ultramarines: {
+            name: "Ультрамарины",
+            desc: "Вы — образец дисциплины, чести и тактического гения. Легион Ультрамаринов (13-й) славится своей организованностью и верностью Империуму. Вы предпочитаете действовать по плану, но всегда готовы импровизировать. 'Мужество и честь!'"
+        },
+        blood_angels: {
+            name: "Кровавые Ангелы",
+            desc: "Вы — воплощение ярости и благородства. Легион Кровавых Ангелов (9-й) известен своей скоростью, жаждой боя и трагической красотой. Вас ведет вперед не только долг, но и внутренний огонь. 'За Сангвиния и Императора!'"
+        },
+        imperial_fists: {
+            name: "Имперские Кулаки",
+            desc: "Вы — несокрушимая стена. Легион Имперских Кулаков (7-й) специализируется на обороне и осадах. Вы цените порядок, структуру и надежность. 'Мы — щит Императора!'"
+        },
+        raven_guard: {
+            name: "Гвардия Ворона",
+            desc: "Вы — тень. Легион Гвардии Ворона (19-й) предпочитает скрытность, диверсии и внезапные удары. Вы не любите шум и славу, предпочитая действовать тихо и эффективно. 'Мы — тени, что защищают свет.'"
+        },
+        night_lords: {
+            name: "Повелители Ночи",
+            desc: "Вы — страх. Легион Повелителей Ночи (8-й) использует террор как оружие. Вы понимаете, что иногда цель оправдывает средства, и не боитесь запачкать руки. 'Мы — то, что скрывается в темноте.'"
+        },
+        thousand_sons: {
+            name: "Тысяча Сынов",
+            desc: "Вы — искатель знаний. Легион Тысячи Сынов (15-й) погружен в тайны варпа и психологии. Вы цените интеллект и мудрость превыше грубой силы. 'Знание — сила, но оно может быть проклятием.'"
+        },
+        white_scars: {
+            name: "Белые Шрамы",
+            desc: "Вы — ветер. Легион Белых Шрамов (5-й) известен своей скоростью и любовью к свободе. Вы не терпите ограничений и предпочитаете стремительные атаки. 'Мы — буря, что сметает все на пути.'"
+        },
+        iron_warriors: {
+            name: "Железные Воины",
+            desc: "Вы — прагматик. Легион Железных Воинов (4-й) верит, что выживание — единственная цель. Вы не верите в сентиментальности и готовы на все ради победы. 'Слабость — это грех.'"
+        },
+        alpha_legion: {
+            name: "Альфа-Легион",
+            desc: "Вы — загадка. Альфа-Легион (20-й) специализируется на инфильтрации, обмане и психологической войне. Вы всегда на шаг впереди и никогда не раскрываете всех карт. 'Я — Альфарий. Я — Омегон. Я — легион.'"
+        },
+        black_legion: {
+            name: "Черный Легион",
+            desc: "Вы — хаос. Черный Легион (бывшие Сыны Хоруса) служит Темным Богам. Вы отвергли Императора и выбрали путь разрушения и власти. 'Смерть Императору!'"
+        },
+        space_wolves: {
+            name: "Космические Волки",
+            desc: "Вы — дикость и сила. Легион Космических Волков (6-й) известен своей яростью, независимостью и любовью к ближнему бою. Вы не любите церемоний и предпочитаете решать проблемы когтями. 'За Фенрис и Императора!'"
+        },
+        death_guard: {
+            name: "Гвардия Смерти",
+            desc: "Вы — несокрушимость. Легион Гвардии Смерти (14-й) славится своей выносливостью и стойкостью к боли. Вы способны выдержать любые испытания и никогда не сдаетесь. 'Мы — яд, что убивает.'"
+        }
+    };
+
+    let currentQuestion = 0;
+    let scores = {};
+
+    // DOM Elements
+    const questionEl = document.getElementById('question');
+    const optionsEl = document.getElementById('options');
+    const progressEl = document.getElementById('progress');
+    const quizSection = document.getElementById('quiz-section');
+    const resultSection = document.getElementById('result-section');
+    const resultName = document.getElementById('result-name');
+    const resultDesc = document.getElementById('result-desc');
+
+    function startQuiz() {
+        currentQuestion = 0;
+        scores = {};
+        // Инициализация счетчиков для всех легионов
+        for (let key in legions) {
+            scores[key] = 0;
+        }
+        quizSection.classList.remove('hidden');
+        resultSection.classList.add('hidden');
+        showQuestion();
+    }
+
+    function showQuestion() {
+        const q = questions[currentQuestion];
+        questionEl.textContent = q.question;
+        optionsEl.innerHTML = '';
+
+        // Обновление прогресс-бара
+        const progressPercent = ((currentQuestion) / questions.length) * 100;
+        progressEl.style.width = progressPercent + '%';
+
+        q.options.forEach(option => {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.textContent = option.text;
+            btn.onclick = () => selectOption(option.legion);
+            optionsEl.appendChild(btn);
+        });
+    }
+
+    function selectOption(legionKey) {
+        scores[legionKey]++;
+        currentQuestion++;
+
+        if (currentQuestion < questions.length) {
+            showQuestion();
+        } else {
+            showResult();
+        }
+    }
+
+    function showResult() {
+        quizSection.classList.add('hidden');
+        resultSection.classList.remove('hidden');
+        progressEl.style.width = '100%';
+
+        // Находим легион с максимальным количеством баллов
+        let maxScore = -1;
+        let bestLegion = null;
+
+        for (let key in scores) {
+            if (scores[key] > maxScore) {
+                maxScore = scores[key];
+                bestLegion = key;
+            }
+        }
+
+        // Если вдруг ничья или ошибка, берем первый
+        if (!bestLegion) bestLegion = 'ultramarines';
+
+        resultName.textContent = legions[bestLegion].name;
+        resultDesc.textContent = legions[bestLegion].desc;
+    }
+
+    function restartQuiz() {
+        startQuiz();
+    }
+
+    // Запуск
+    startQuiz();
+</script>
+
+</body>
+</html>
