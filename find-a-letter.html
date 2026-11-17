@@ -225,49 +225,39 @@
 
   /* ============================================================
      ГРУППЫ «ПОХОЖИХ» БУКВ — для супер-сложного режима.
-     В каждой группе 4–5 строчных букв; заглавные добавляются
-     автоматически (через toUpperCase).
-     Ключ — строчная буква, значение — массив её «двойников».
+     В каждой группе 4–5 строчных; заглавные добавляются автоматически.
      ============================================================ */
   const SIMILAR_GROUPS = {
-    // Зеркальные с палками
     b: ['b', 'd', 'p', 'q'],
     d: ['b', 'd', 'p', 'q'],
     p: ['b', 'd', 'p', 'q'],
     q: ['b', 'd', 'p', 'q', 'g'],
 
-    // Палочки с дугами
     m: ['m', 'n', 'h', 'r'],
     n: ['m', 'n', 'h', 'r', 'u'],
     h: ['m', 'n', 'h', 'r'],
     r: ['m', 'n', 'h', 'r'],
 
-    // Вертикальные с точкой/крючком/перекладиной
     i: ['i', 'l', 'j', 't'],
     l: ['i', 'l', 'j', 't'],
     j: ['i', 'l', 'j', 't', 'g'],
     t: ['i', 'l', 'j', 't', 'f'],
 
-    // Галочки
     u: ['u', 'v', 'w', 'y', 'n'],
     v: ['u', 'v', 'w', 'y', 'x'],
     w: ['u', 'v', 'w', 'y'],
     y: ['u', 'v', 'w', 'y', 'g'],
 
-    // Круглые
     c: ['c', 'e', 'o', 'a', 's'],
     e: ['c', 'e', 'o', 'a'],
     o: ['c', 'e', 'o', 'a', 'u'],
     a: ['c', 'e', 'o', 'a'],
 
-    // С верхней палкой / пересечением
     f: ['f', 't', 'k', 'h'],
     k: ['f', 't', 'k', 'h', 'x'],
 
-    // С хвостом вниз
     g: ['g', 'q', 'y', 'j', 'p'],
 
-    // Зигзаги
     s: ['s', 'z', 'c', 'x'],
     z: ['s', 'z', 'x', 'c'],
     x: ['x', 'k', 'v', 's'],
@@ -289,8 +279,9 @@
   let currentSize = SIZES[1];
   let currentLevel = 'super';
   let soundOn = true;
-  let targetSymbol = 'A';
-  let targetLetter = 'A';
+
+  let targetSymbol = 'A';     // что показываем в задании
+  let targetLetter = 'A';     // БЕЗ РЕГИСТРА — по нему сравниваем
   let targetCount = 0;
   let foundCount = 0;
   let errorCount = 0;
@@ -424,6 +415,8 @@
       const lower = LOWER[Math.floor(Math.random() * LOWER.length)];
       targetSymbol = Math.random() < 0.5 ? lower : lower.toUpperCase();
     }
+
+    // КЛЮЧЕВОЕ: целевая буква без регистра — по ней сравниваем ВСЁ
     targetLetter = targetSymbol.toUpperCase();
     const targetLower = targetSymbol.toLowerCase();
 
@@ -434,8 +427,11 @@
     if (count > 8) count = 8;
     targetCount = count;
 
+    // Целевые — все символы пула, у которых toUpperCase совпадает (D и d)
     const targetVariants = pool.filter((c) => c.toUpperCase() === targetLetter);
     if (targetVariants.length === 0) targetVariants.push(targetSymbol);
+
+    // Другие — все, у которых toUpperCase НЕ совпадает (b, p, q, B, P, Q...)
     const others = pool.filter((c) => c.toUpperCase() !== targetLetter);
 
     const cells = [];
@@ -483,6 +479,7 @@
 
     speak(sym);
 
+    // КЛЮЧЕВОЕ: сравнение БЕЗ регистра — D и d считаются одной буквой
     if (sym.toUpperCase() === targetLetter) {
       cell.classList.add('found');
       foundCount++;
